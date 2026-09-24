@@ -29,18 +29,18 @@ tmux セッション内では claude が `DISCORD_STATE_DIR=<dir>/.discord-state
 
 ### Agent-first — エージェントに任せる
 
-dcbot は usage contract を同梱しています — `dcbot agents.md` で出力
+dcbot は usage contract を同梱しています — `dcbot agent` で出力
 (リポジトリの [`AGENTS.md`](../AGENTS.md) と同一)。エージェントに読ませて
 から、やりたいことを伝えるだけです:
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 今動いているボットは?
 ```
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 business-bot という名前で新しいボットを作って、トークンは ...
 ```
@@ -53,19 +53,19 @@ business-bot という名前で新しいボットを作って、トークンは 
 > 聞かれ、あとはエージェントが `dcbot` コマンドで引き継ぎます。
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 ~/.claude/channels/discord の既存ボットを legacy-bot として dcbot に移行して
 ```
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 business-bot で pairing code a4f91c を承認して
 ```
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 このディレクトリのデプロイを doctor して
 ```
@@ -97,7 +97,7 @@ dcbot start business-bot               # tmux セッション dcbot-business-bot
 dcbot attach business-bot              # claude セッションにアタッチ
 ```
 
-ボットに DM — snowflake をシード済みならそのまま使えます。空のまま (pairing モード) なら、ボットがコードを返信します。`dcbot approve <code>` で承認 (デプロイ dir 内で実行、またはボット名を指定)。
+ボットに DM — snowflake をシード済みならそのまま使えます。空のまま (pairing モード) なら、ボットがコードを返信します。`dcbot approve <code>` で承認 (デプロイ dir 内で実行、またはボット名を指定) — あるいは先に `dcbot pair --wait` を実行してから DM すれば自動承認。ボットの返信にある `/discord:access pair` の案内は無視してください — dcbot デプロイではあの skill はこのボットのではなく global の state dir を書き換えます。
 
 ### 既存のグローバルボットからの移行
 
@@ -127,7 +127,7 @@ dcbot start mybot
 
 | Command | 説明 |
 | --- | --- |
-| `dcbot new <name> [--dir p \| --here \| --yes]` | オンボードウィザード — dir, `.env` (600), `access.json` シード, `bot.toml`, `run.sh`, `.gitignore` を生成し registry 登録 (`--yes` で非対話モード: `--token`/`$DCBOT_BOT_TOKEN`, `--owner`, `--start` — エージェント向け) |
+| `dcbot new <name> [--dir p \| --here \| --yes]` | オンボードウィザード — dir, `.env` (600), `access.json` シード, `bot.toml`, `run.sh`, `.gitignore` を生成し registry 登録 (`--yes` で非対話モード: `--token`/`$DCBOT_BOT_TOKEN`, `--owner`, `--start`, `--pair` — エージェント向け) |
 | `dcbot start/stop/restart <name>` | tmux ライフサイクル (`--respawn` で claude 自動再起動) |
 | `dcbot attach <name>` | `tmux attach -t dcbot-<name>` |
 | `dcbot logs <name> [-f]` | セッション出力を表示 |
@@ -135,7 +135,7 @@ dcbot start mybot
 | `dcbot status [name]` | トークン live 検証、ゲートウェイ、allowlist/pending 数 |
 | `dcbot invite [name] [--open\|--copy]` | OAuth2 招待 URL を再表示; `--open` でブラウザ起動、`--copy` でクリップボードへ |
 | `dcbot doctor [target]` | `.env` 権限、トークン、access.json、ツール、プラグイン、run.sh、トークン重複を検査 |
-| `dcbot approve <code>` | ペアリング承認 → `allowFrom` + `approved/<senderId>` マーカー書込 |
+| `dcbot approve [code]` / `dcbot pair [--wait]` | ペアリング承認 → `allowFrom` + `approved/<senderId>` マーカー書込。code なしで pending 一覧、`--wait` で次の DM のコードを自動承認 |
 | `dcbot deny / allow / remove / policy` | cwd (または名前指定) のボットの `access.json` を管理 |
 | `dcbot group add/rm <channelId>` | guild チャンネル opt-in (`--no-mention`, `--allow ids`) |
 | `dcbot set <key> <value>` | `ackReaction`, `replyToMode`, `textChunkLimit`, `chunkMode`, `mentionPatterns` |
@@ -152,6 +152,7 @@ dcbot start mybot
 <deployment>/                # ディスク上の任意の場所
   bot.toml                   # マニフェスト (bot id/tag, app id, created, channels flag)
   run.sh                     # DISCORD_STATE_DIR export → exec claude --channels …
+  .claude/rules/dcbot.md     # セッション rules — Claude Code が自動ロード
   .discord-state/
     .env                     # DISCORD_BOT_TOKEN (600)
     access.json              # dmPolicy / allowFrom / groups / pending / delivery config
@@ -169,6 +170,32 @@ dcbot start mybot
 - `approve` は pending の `senderId` を `allowFrom` に移し、サーバーがポーリングする `approved/<senderId>` マーカーを書き込みます。
 - guild チャンネルは **チャンネル** snowflake 単位で opt-in、スレッドは親を継承、`requireMention` はデフォルト true。
 - `dcbot new` は snowflake 指定時に `allowlist` をシード — プラグインが推奨するロックダウン状態です。
+
+### プラグインの `/discord:*` スキルはここでは使わない
+
+プラグインが同梱する 2 つのスキル — `/discord:access` と
+`/discord:configure` — はグローバル dir `~/.claude/channels/discord` に
+ハードコードされています。dcbot デプロイではサーバーが
+`<dir>/.discord-state` を読むため、これらのスキルは誰も読まないファイルを
+書き換えます: そこで承認したペアリングは完了せず、policy 変更は静かに
+無効になり、`configure` はトークンを間違った場所に書きます。ボットの
+「Pairing required — run /discord:access pair \<code\>」という返信が
+最もハマりやすい箇所です — 必ず dcbot 側で承認してください:
+
+| プラグインのスキル | 対応する dcbot コマンド |
+| --- | --- |
+| `/discord:access pair <code>` | `dcbot approve <code>` — または DM 前に `dcbot pair --wait` |
+| `/discord:access deny <code>` | `dcbot deny <code>` |
+| `/discord:access allow\|remove <id>` | `dcbot allow\|remove <id>` |
+| `/discord:access policy <mode>` | `dcbot policy <mode>` |
+| `/discord:access group add\|rm` | `dcbot group add\|rm` |
+| `/discord:access set <k> <v>` | `dcbot set <k> <v>` |
+| `/discord:access` (status) | `dcbot status` |
+| `/discord:configure <token>` | トークンは `.discord-state/.env` — `dcbot new`/`register` が書込 |
+
+MCP ツール (`reply`, `react`, `edit_message`, `fetch_messages`,
+`download_attachment`) は影響なし — サーバー内で動作し、
+`DISCORD_STATE_DIR` を尊重します。
 
 ## その他のインストール方法
 

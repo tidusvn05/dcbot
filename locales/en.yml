@@ -28,6 +28,9 @@ new:
   created: "deployment created at %{dir}"
   start_now: "Start the bot session now (tmux)?"
   start_hint: "Later: `dcbot start %{name}`"
+  autopair_prompt: "Pairing mode — DM your bot now and I'll auto-approve the code (waits 60s)?"
+  pair_hint: "pairing mode: after `dcbot start %{name}`, run `dcbot pair --wait` then DM the bot — or approve a code with `dcbot approve <code>`"
+  pair_skipped: "--pair ignored — an owner snowflake was seeded, the allowlist needs no pairing"
 
 lifecycle:
   tmux_missing: "tmux is not installed — `apt install tmux` (or your distro's equivalent)."
@@ -79,6 +82,12 @@ status:
   gateway: "gateway:"
 
 access:
+  pending_line: "%{code} → sender %{sender} (age %{age}, expires in %{ttl})"
+  no_pending: "no pending pairings — unknown senders get a code when they DM the bot"
+  approve_hint: "approve with: dcbot approve <code>"
+  pair_waiting: "waiting %{secs}s for a pairing DM — send your bot any message…"
+  pair_timeout: "no pairing DM within %{secs}s — DM the bot, then run `dcbot pair --wait` again"
+  pair_multi: "multiple pending pairings — approve one explicitly: dcbot approve <code>"
   approved: "pairing approved — %{sender} added to '%{bot}' allowlist"
   approved_hint: "the channel server sends the \"Paired!\" confirmation on its next poll (~5s)"
   denied: "pairing code %{code} denied (sender %{sender} not notified)"

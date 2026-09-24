@@ -106,6 +106,9 @@ pub fn status(name: Option<&str>) -> Result<()> {
                 t!("status.groups"),
                 a.groups.len()
             );
+            for line in crate::cmds::access::pending_lines(&a) {
+                println!("    {line}");
+            }
         }
         Err(e) => println!("  {} {e}", style(t!("status.token_bad")).red()),
     }

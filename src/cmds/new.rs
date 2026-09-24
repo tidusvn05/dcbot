@@ -5,7 +5,7 @@ use rust_i18n::t;
 use std::fs;
 use std::io::IsTerminal;
 use std::os::unix::fs::PermissionsExt;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::cmds::lifecycle;
 use crate::discord;
@@ -22,6 +22,7 @@ pub struct NewOpts {
     pub owner: Option<String>,
     pub yes: bool,
     pub start: bool,
+    pub pair: bool,
 }
 
 pub const RUN_SH: &str = r#"#!/usr/bin/env bash
@@ -39,6 +40,42 @@ else
   exec claude --channels plugin:discord@claude-plugins-official "$@"
 fi
 "#;
+
+/// Session rule file — Claude Code auto-loads `.claude/rules/*.md` at launch
+/// (same priority as CLAUDE.md). Teaches the session that access control goes
+/// through `dcbot`, never the plugin's `/discord:*` skills (they hardcode the
+/// global state dir and would silently edit the wrong files).
+pub const DCBOT_RULE: &str = r#"This directory is a **dcbot** deployment — a Discord-channel bot for Claude
+Code with its own `.discord-state/`. Operate it with the `dcbot` CLI, never
+the plugin's built-in skills.
+
+- Never run `/discord:access` or `/discord:configure` — both hardcode the
+  global `~/.claude/channels/discord` dir and would silently edit files this
+  server never reads. dcbot equivalents: `dcbot approve <code>` ·
+  `dcbot pair --wait` · `deny` · `allow` · `remove` · `policy` ·
+  `group add|rm` · `set` · `status`.
+- Pairing: when the bot replies "Pairing required", approve from this dir —
+  `dcbot approve <code>` (the bot name resolves from `.discord-state`).
+- Proactive DM to an allowlisted user: `dcbot dm <text> [--to <snowflake>]`
+  — works without an inbound message.
+- Don't hand-edit `.discord-state/` — use the CLI so validation and the
+  `approved/` marker stay correct.
+- Session lifecycle (`dcbot start|stop|restart|logs|attach`) belongs to the
+  user's terminal — never launch `claude --channels` yourself.
+- Full usage contract: `dcbot agent`.
+"#;
+
+/// Write `.claude/rules/dcbot.md` into a deployment dir — write-if-missing
+/// so user edits are never clobbered.
+pub fn write_rule(dir: &Path) -> Result<()> {
+    let rule = dir.join(".claude/rules/dcbot.md");
+    if rule.exists() {
+        return Ok(());
+    }
+    fs::create_dir_all(rule.parent().unwrap())?;
+    fs::write(&rule, DCBOT_RULE)?;
+    Ok(())
+}
 
 pub fn run(opts: NewOpts) -> Result<()> {
     let env_token = std::env::var("DCBOT_BOT_TOKEN")
@@ -177,6 +214,7 @@ pub fn run(opts: NewOpts) -> Result<()> {
     if !owner.is_empty() && !is_snowflake(&owner) {
         bail!(t!("new.owner_invalid", id = owner.as_str()));
     }
+    let pairing_mode = owner.is_empty();
 
     // --- Write the deployment -------------------------------------------------
     let state_dir = dir.join(".discord-state");
@@ -215,6 +253,7 @@ pub fn run(opts: NewOpts) -> Result<()> {
     if !gi_body.lines().any(|l| l.trim() == ".discord-state/") {
         fs::write(&gi, format!("{gi_body}.discord-state/\n"))?;
     }
+    write_rule(&dir)?;
 
     // --- Register -------------------------------------------------------------
     let mut reg = Registry::load();
@@ -245,6 +284,33 @@ pub fn run(opts: NewOpts) -> Result<()> {
         lifecycle::start(&opts.name, false).context("start failed")?;
     } else {
         println!("{}", t!("new.start_hint", name = opts.name.as_str()));
+    }
+
+    // Pairing mode (no owner seeded): offer to auto-approve the first DM's
+    // pairing code — only works once the session/server is actually up.
+    if pairing_mode {
+        if do_start {
+            let wait = opts.pair
+                || (!noninteractive
+                    && Confirm::with_theme(&theme)
+                        .with_prompt(t!("new.autopair_prompt").to_string())
+                        .default(true)
+                        .interact()?);
+            if wait {
+                let bot = crate::resolve::resolve(Some(&opts.name))?;
+                if let Err(e) = crate::cmds::access::pair_wait(&bot, 60) {
+                    eprintln!("{} {e}", style(t!("common.warn")).yellow().bold(),);
+                }
+            }
+        } else {
+            println!("{}", t!("new.pair_hint", name = opts.name.as_str()));
+        }
+    } else if opts.pair {
+        eprintln!(
+            "{} {}",
+            style(t!("common.warn")).yellow().bold(),
+            t!("new.pair_skipped")
+        );
     }
     Ok(())
 }

@@ -56,6 +56,9 @@ enum Commands {
         /// Start the tmux session right after creating
         #[arg(long)]
         start: bool,
+        /// Pairing mode only: wait 60s for your DM and auto-approve the code
+        #[arg(long)]
+        pair: bool,
     },
     /// Adopt an existing deployment dir into the registry
     Register { dir: PathBuf },
@@ -104,8 +107,15 @@ enum Commands {
     },
     /// Health-check a deployment (default: current dir)
     Doctor { target: Option<String> },
-    /// Approve a pending pairing code
-    Approve { code: String, name: Option<String> },
+    /// Approve a pending pairing code (no code = list pending; `dcbot pair` alias)
+    #[command(visible_alias = "pair")]
+    Approve {
+        code: Option<String>,
+        /// Wait for the next pairing DM and auto-approve it (default: 60s)
+        #[arg(long, num_args = 0..=1, default_missing_value = "60", value_name = "secs")]
+        wait: Option<u64>,
+        name: Option<String>,
+    },
     /// Discard a pending pairing code
     Deny { code: String, name: Option<String> },
     /// Add a user snowflake to the allowlist
@@ -208,6 +218,7 @@ fn main() -> Result<()> {
             owner,
             yes,
             start,
+            pair,
         } => cmds::new::run(cmds::new::NewOpts {
             name,
             dir,
@@ -216,6 +227,7 @@ fn main() -> Result<()> {
             owner,
             yes,
             start,
+            pair,
         }),
         Commands::Register { dir } => cmds::registry_cmds::register(dir),
         Commands::Forget { name } => cmds::registry_cmds::forget(&name),
@@ -236,7 +248,9 @@ fn main() -> Result<()> {
             let code = cmds::doctor::run(target.as_deref())?;
             std::process::exit(code);
         }
-        Commands::Approve { code, name } => cmds::access::approve(&code, name.as_deref()),
+        Commands::Approve { code, wait, name } => {
+            cmds::access::approve(code.as_deref(), wait, name.as_deref())
+        }
         Commands::Deny { code, name } => cmds::access::deny(&code, name.as_deref()),
         Commands::Allow { id, name } => cmds::access::allow(&id, name.as_deref()),
         Commands::Remove { id, name } => cmds::access::remove(&id, name.as_deref()),

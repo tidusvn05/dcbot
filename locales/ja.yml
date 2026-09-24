@@ -28,6 +28,9 @@ new:
   created: "デプロイを作成しました: %{dir}"
   start_now: "今すぐボットセッションを起動しますか (tmux)?"
   start_hint: "後で: `dcbot start %{name}`"
+  autopair_prompt: "pairing モード — 今すぐボットに DM すればコードを自動承認します (60s 待機)?"
+  pair_hint: "pairing モード: `dcbot start %{name}` の後に `dcbot pair --wait` を実行してから DM — または `dcbot approve <code>` で承認"
+  pair_skipped: "--pair は無視されました — owner snowflake がシード済みのため pairing は不要です"
 
 lifecycle:
   tmux_missing: "tmux がインストールされていません — `apt install tmux` などで導入してください。"
@@ -79,6 +82,12 @@ status:
   gateway: "ゲートウェイ:"
 
 access:
+  pending_line: "%{code} → sender %{sender} (経過 %{age}, %{ttl} で失効)"
+  no_pending: "保留中のペアリングはありません — 未許可の sender が DM するとコードが発行されます"
+  approve_hint: "承認: dcbot approve <code>"
+  pair_waiting: "ペアリング DM を %{secs}s 待機中 — ボットに何か送信してください…"
+  pair_timeout: "%{secs}s 以内にペアリング DM がありません — DM 後に `dcbot pair --wait` を再実行"
+  pair_multi: "保留中のペアリングが複数あります — 明示的に承認: dcbot approve <code>"
   approved: "ペアリング承認 — %{sender} を '%{bot}' の allowlist に追加"
   approved_hint: "チャネルサーバーが次のポーリング (~5秒) で \"Paired!\" 確認を送信します"
   denied: "コード %{code} を拒否 (sender %{sender} には通知なし)"

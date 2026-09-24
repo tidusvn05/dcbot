@@ -29,17 +29,17 @@ Trong tmux session, claude chạy với `DISCORD_STATE_DIR=<dir>/.discord-state`
 
 ### Agent-first — giao cho agent làm
 
-dcbot tự ship usage contract — `dcbot agents.md` in nó ra (cũng nằm ở
+dcbot tự ship usage contract — `dcbot agent` in nó ra (cũng nằm ở
 [`AGENTS.md`](../AGENTS.md)). Chỉ cần trỏ agent tới nó rồi mô tả yêu cầu:
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 bot nào đang chạy?
 ```
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 tạo bot mới tên business-bot, token là ...
 ```
@@ -52,19 +52,19 @@ tạo bot mới tên business-bot, token là ...
 > khiển tiếp bằng các lệnh `dcbot` khác.
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 migrate bot cũ ở ~/.claude/channels/discord sang dcbot, đặt tên legacy-bot
 ```
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 approve pairing code a4f91c cho business-bot
 ```
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 check sức khỏe deployment ở dir này
 ```
@@ -95,7 +95,7 @@ dcbot start business-bot               # tmux session dcbot-business-bot
 dcbot attach business-bot              # vào session claude
 ```
 
-DM bot — nếu đã seed snowflake thì dùng được ngay. Nếu để trống (pairing mode), bot trả lời bằng code; duyệt bằng `dcbot approve <code>` (chạy trong deployment dir hoặc kèm tên bot).
+DM bot — nếu đã seed snowflake thì dùng được ngay. Nếu để trống (pairing mode), bot trả lời bằng code; duyệt bằng `dcbot approve <code>` (chạy trong deployment dir hoặc kèm tên bot) — hoặc chạy `dcbot pair --wait` trước rồi DM để tự duyệt. Bỏ qua gợi ý `/discord:access pair` trong reply của bot — trong deployment dcbot, skill đó ghi vào global state dir chứ không phải của bot này.
 
 ### Migrate từ bot global có sẵn
 
@@ -125,7 +125,7 @@ Sau khi move, **đừng** chạy `claude --channels …` thủ công nữa — t
 
 | Command | Chức năng |
 | --- | --- |
-| `dcbot new <name> [--dir p \| --here \| --yes]` | Wizard onboarding — tạo dir, `.env` (600), seed `access.json`, `bot.toml`, `run.sh`, `.gitignore`; đăng ký registry. `--yes` chạy non-interactive (`--token`/`$DCBOT_BOT_TOKEN`, `--owner`, `--start`) — cho agent |
+| `dcbot new <name> [--dir p \| --here \| --yes]` | Wizard onboarding — tạo dir, `.env` (600), seed `access.json`, `bot.toml`, `run.sh`, `.gitignore`; đăng ký registry. `--yes` chạy non-interactive (`--token`/`$DCBOT_BOT_TOKEN`, `--owner`, `--start`, `--pair`) — cho agent |
 | `dcbot start/stop/restart <name>` | tmux lifecycle (`--respawn` tự restart claude khi exit) |
 | `dcbot attach <name>` | `tmux attach -t dcbot-<name>` |
 | `dcbot logs <name> [-f]` | Xem output session |
@@ -133,7 +133,7 @@ Sau khi move, **đừng** chạy `claude --channels …` thủ công nữa — t
 | `dcbot status [name]` | Check token live, gateway, số allowlist/pending |
 | `dcbot invite [name] [--open\|--copy]` | In lại OAuth2 invite URL; `--open` mở browser, `--copy` copy clipboard |
 | `dcbot doctor [target]` | Kiểm tra `.env` perms, token, access.json, tools, plugin, run.sh, trùng token |
-| `dcbot approve <code>` | Duyệt pairing → `allowFrom` + ghi marker `approved/<senderId>` |
+| `dcbot approve [code]` / `dcbot pair [--wait]` | Duyệt pairing → `allowFrom` + ghi marker `approved/<senderId>`. Không code = list pending; `--wait` tự duyệt code của DM kế tiếp |
 | `dcbot deny / allow / remove / policy` | Quản `access.json` của bot ở cwd (hoặc theo tên) |
 | `dcbot group add/rm <channelId>` | Opt-in guild channel (`--no-mention`, `--allow ids`) |
 | `dcbot set <key> <value>` | `ackReaction`, `replyToMode`, `textChunkLimit`, `chunkMode`, `mentionPatterns` |
@@ -150,6 +150,7 @@ Tham số tên có thể bỏ trống khi đứng trong deployment dir — dcbot
 <deployment>/                # bất cứ đâu trên đĩa
   bot.toml                   # manifest (bot id/tag, app id, created, channels flag)
   run.sh                     # export DISCORD_STATE_DIR → exec claude --channels …
+  .claude/rules/dcbot.md     # rules cho session — Claude Code tự load
   .discord-state/
     .env                     # DISCORD_BOT_TOKEN (600)
     access.json              # dmPolicy / allowFrom / groups / pending / delivery config
@@ -167,6 +168,31 @@ Tham số tên có thể bỏ trống khi đứng trong deployment dir — dcbot
 - `approve` chuyển `senderId` pending vào `allowFrom` và ghi marker `approved/<senderId>` mà server poll.
 - Guild channel opt-in theo **channel** snowflake; thread kế thừa parent; `requireMention` mặc định true.
 - `dcbot new` seed sẵn `allowlist` với snowflake của bạn — đúng khuyến nghị lockdown của plugin.
+
+### Đừng dùng skill `/discord:*` của plugin ở đây
+
+Plugin ship 2 skill — `/discord:access` và `/discord:configure` — hardcode
+global dir `~/.claude/channels/discord`. Trong deployment dcbot, server đọc
+`<dir>/.discord-state`, nên các skill đó sửa một file không ai đọc: pairing
+approve ở đó không bao giờ hoàn tất, đổi policy lặng im không tác dụng, và
+`configure` ghi token sai chỗ. Reply "Pairing required — run
+/discord:access pair \<code\>" của bot là chỗ dễ vấp nhất — luôn duyệt qua
+dcbot:
+
+| Skill plugin | Lệnh dcbot tương đương |
+| --- | --- |
+| `/discord:access pair <code>` | `dcbot approve <code>` — hoặc `dcbot pair --wait` trước khi DM |
+| `/discord:access deny <code>` | `dcbot deny <code>` |
+| `/discord:access allow\|remove <id>` | `dcbot allow\|remove <id>` |
+| `/discord:access policy <mode>` | `dcbot policy <mode>` |
+| `/discord:access group add\|rm` | `dcbot group add\|rm` |
+| `/discord:access set <k> <v>` | `dcbot set <k> <v>` |
+| `/discord:access` (status) | `dcbot status` |
+| `/discord:configure <token>` | token nằm ở `.discord-state/.env` — do `dcbot new`/`register` ghi |
+
+Các MCP tool (`reply`, `react`, `edit_message`, `fetch_messages`,
+`download_attachment`) không bị ảnh hưởng — chúng chạy trong server, vốn
+đã tôn trọng `DISCORD_STATE_DIR`.
 
 ## Tùy chọn cài đặt khác
 

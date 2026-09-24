@@ -33,18 +33,18 @@ Inside the tmux session, claude runs with `DISCORD_STATE_DIR=<dir>/.discord-stat
 
 ### Agent-first — hand it to your agent
 
-dcbot ships its own usage contract — `dcbot agents.md` prints it (also
+dcbot ships its own usage contract — `dcbot agent` prints it (also
 shipped as [`AGENTS.md`](AGENTS.md)). Point your agent at it, then ask in
 natural language:
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 which bots are running right now?
 ```
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 create a new discord bot called business-bot, token is ...
 ```
@@ -57,19 +57,19 @@ create a new discord bot called business-bot, token is ...
 > input), then the agent can take over with `dcbot` commands.
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 migrate my existing global discord bot into dcbot, name it legacy-bot
 ```
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 approve pairing code a4f91c for business-bot
 ```
 
 ```text
-follow cli `dcbot agents.md`
+follow cli `dcbot agent`
 
 doctor the deployment in this directory
 ```
@@ -101,7 +101,7 @@ dcbot start business-bot               # tmux session dcbot-business-bot
 dcbot attach business-bot              # jump into the claude session
 ```
 
-DM your bot — with your snowflake seeded it just works. If you left it empty (pairing mode), the bot replies with a code; approve it with `dcbot approve <code>` (run in the deployment dir or pass the bot name).
+DM your bot — with your snowflake seeded it just works. If you left it empty (pairing mode), the bot replies with a code; approve it with `dcbot approve <code>` (run in the deployment dir or pass the bot name) — or run `dcbot pair --wait` first, then DM, to auto-approve. Skip the `/discord:access pair` hint in the bot's reply — inside a dcbot deployment that skill edits the global state dir, not this bot's.
 
 ### Migrating an existing global bot
 
@@ -131,7 +131,7 @@ After the move, do **not** launch `claude --channels …` manually anymore — w
 
 | Command | What it does |
 | --- | --- |
-| `dcbot new <name> [--dir p \| --here \| --yes]` | Onboarding wizard — creates dir, `.discord-state/.env` (600), seeded `access.json`, `bot.toml`, `run.sh`, `.gitignore`; registers the bot. `--yes` runs non-interactively (`--token`/`$DCBOT_BOT_TOKEN`, `--owner`, `--start`) — agent-friendly |
+| `dcbot new <name> [--dir p \| --here \| --yes]` | Onboarding wizard — creates dir, `.discord-state/.env` (600), seeded `access.json`, `bot.toml`, `run.sh`, `.gitignore`; registers the bot. `--yes` runs non-interactively (`--token`/`$DCBOT_BOT_TOKEN`, `--owner`, `--start`, `--pair`) — agent-friendly |
 | `dcbot start/stop/restart <name>` | tmux lifecycle (`--respawn` auto-restarts claude on exit) |
 | `dcbot attach <name>` | `tmux attach -t dcbot-<name>` |
 | `dcbot logs <name> [-f]` | Tail the session pane |
@@ -139,7 +139,7 @@ After the move, do **not** launch `claude --channels …` manually anymore — w
 | `dcbot status [name]` | Token live-check, gateway line, allowlist/pending counts |
 | `dcbot invite [name] [--open\|--copy]` | Re-print the OAuth2 invite URL; `--open` launches a browser, `--copy` uses the clipboard |
 | `dcbot doctor [target]` | `.env` perms, token validity, access.json, tools on PATH, plugin presence, run.sh, duplicate tokens |
-| `dcbot approve <code>` | Approve pairing → `allowFrom` + writes `approved/<senderId>` marker |
+| `dcbot approve [code]` / `dcbot pair [--wait]` | Approve pairing → `allowFrom` + writes `approved/<senderId>` marker. No code lists pending; `--wait` auto-approves the next DM's code |
 | `dcbot deny / allow / remove / policy` | Manage `access.json` for the bot in cwd (or named) |
 | `dcbot group add/rm <channelId>` | Guild-channel opt-in (`--no-mention`, `--allow ids`) |
 | `dcbot set <key> <value>` | `ackReaction`, `replyToMode`, `textChunkLimit`, `chunkMode`, `mentionPatterns` |
@@ -156,6 +156,7 @@ Name arguments are optional inside a deployment dir — dcbot resolves the bot b
 <deployment>/                # anywhere on disk
   bot.toml                   # manifest (bot id/tag, app id, created, channels flag)
   run.sh                     # exported DISCORD_STATE_DIR → exec claude --channels …
+  .claude/rules/dcbot.md     # session rules — auto-loaded by Claude Code
   .discord-state/
     .env                     # DISCORD_BOT_TOKEN (600)
     access.json              # dmPolicy / allowFrom / groups / pending / delivery config
@@ -173,6 +174,31 @@ Name arguments are optional inside a deployment dir — dcbot resolves the bot b
 - `approve` moves a pending `senderId` into `allowFrom` and drops the `approved/<senderId>` marker the server polls for.
 - Guild channels are opt-in per **channel** snowflake; threads inherit the parent; `requireMention` defaults to true.
 - `dcbot new` seeds `allowlist` with your snowflake when provided — the lockdown the plugin recommends.
+
+### Don't use the plugin's `/discord:*` skills here
+
+The plugin ships two skills — `/discord:access` and `/discord:configure` —
+that hardcode the global `~/.claude/channels/discord` dir. Inside a dcbot
+deployment the server reads `<dir>/.discord-state`, so those skills edit a
+file nobody reads: a pairing approved there never completes, policy changes
+silently no-op, and `configure` writes the token to the wrong place. The
+bot's "Pairing required — run /discord:access pair \<code\>" reply is where
+this bites — always approve through dcbot instead:
+
+| Plugin skill | dcbot equivalent |
+| --- | --- |
+| `/discord:access pair <code>` | `dcbot approve <code>` — or `dcbot pair --wait` before DMing |
+| `/discord:access deny <code>` | `dcbot deny <code>` |
+| `/discord:access allow\|remove <id>` | `dcbot allow\|remove <id>` |
+| `/discord:access policy <mode>` | `dcbot policy <mode>` |
+| `/discord:access group add\|rm` | `dcbot group add\|rm` |
+| `/discord:access set <k> <v>` | `dcbot set <k> <v>` |
+| `/discord:access` (status) | `dcbot status` |
+| `/discord:configure <token>` | token lives in `.discord-state/.env` — set by `dcbot new`/`register` |
+
+The MCP tools (`reply`, `react`, `edit_message`, `fetch_messages`,
+`download_attachment`) are unaffected — they run inside the server, which
+honors `DISCORD_STATE_DIR`.
 
 ## Other install options
 

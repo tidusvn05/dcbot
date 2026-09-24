@@ -20,8 +20,12 @@ dcbot invite [name]     re-print the OAuth2 invite URL (add the bot
                         to another server); --open launches a browser,
                         --copy puts it on the clipboard
 dcbot start|stop|restart <name> [--respawn] / attach <name> / logs <name> [-f]
-dcbot approve|deny <pairing-code>  codes live in .discord-state/access.json
+dcbot approve|deny|pair <code>   codes live in .discord-state/access.json;
+                                 bare `approve`/`pair` lists pending,
+                                 `pair --wait` auto-approves the next DM
 dcbot allow|remove <snowflake> / policy <pairing|allowlist|disabled>
+dcbot dm <text> [--to <snowflake>]  DM an allowlisted user via the Discord
+                                 API — works without an inbound message
 dcbot group add <channelId> [--no-mention] [--allow id1,id2] / group rm <channelId>
 dcbot set <key> <value>  ackReaction, replyToMode, textChunkLimit,
                          chunkMode, mentionPatterns
@@ -35,6 +39,13 @@ nearest `.discord-state` upward.
 
 - Never launch `claude --channels` outside `dcbot start` — without
   `DISCORD_STATE_DIR` the channel server targets the global dir.
+- Never use the plugin's `/discord:access` or `/discord:configure` skills
+  inside a deployment — they hardcode the global
+  `~/.claude/channels/discord` and silently edit files the server never
+  reads. Use the `dcbot` equivalents instead.
+- `dcbot new`/`register`/`start` write `.claude/rules/dcbot.md` into the
+  deployment — Claude Code auto-loads it at session start, so the in-session
+  agent already knows these rules.
 - One token = one process. Two processes on the same token deliver
   every DM twice.
 - Prereqs: `claude` + discord plugin (auto-installed by `dcbot

@@ -28,6 +28,9 @@ new:
   created: "đã tạo deployment tại %{dir}"
   start_now: "Khởi động session bot ngay (tmux)?"
   start_hint: "Sau này: `dcbot start %{name}`"
+  autopair_prompt: "Pairing mode — DM cho bot ngay để tôi tự duyệt code (chờ 60s)?"
+  pair_hint: "pairing mode: sau `dcbot start %{name}`, chạy `dcbot pair --wait` rồi DM bot — hoặc duyệt code bằng `dcbot approve <code>`"
+  pair_skipped: "bỏ qua --pair — đã seed owner snowflake, allowlist không cần pairing"
 
 lifecycle:
   tmux_missing: "chưa cài tmux — `apt install tmux` (hoặc package manager tương đương)."
@@ -79,6 +82,12 @@ status:
   gateway: "gateway:"
 
 access:
+  pending_line: "%{code} → sender %{sender} (tuổi %{age}, hết hạn sau %{ttl})"
+  no_pending: "không có pairing nào đang chờ — sender lạ sẽ nhận code khi DM bot"
+  approve_hint: "duyệt bằng: dcbot approve <code>"
+  pair_waiting: "đang chờ %{secs}s cho một DM pairing — nhắn gì đó cho bot…"
+  pair_timeout: "không có DM pairing trong %{secs}s — DM bot rồi chạy lại `dcbot pair --wait`"
+  pair_multi: "nhiều pairing đang chờ — duyệt tường minh: dcbot approve <code>"
   approved: "đã duyệt pairing — %{sender} vào allowlist của '%{bot}'"
   approved_hint: "channel server gửi xác nhận \"Paired!\" ở lần poll kế (~5s)"
   denied: "đã từ chối code %{code} (sender %{sender} không được thông báo)"
