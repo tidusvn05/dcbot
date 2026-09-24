@@ -1,6 +1,8 @@
 use anyhow::{bail, Context, Result};
 use console::style;
 use rust_i18n::t;
+use std::fs;
+use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 
 use crate::discord;
@@ -48,6 +50,14 @@ pub fn register(dir: PathBuf) -> Result<()> {
             },
         )?;
     }
+
+    // Make the deployment runnable immediately — same self-heal as `start`.
+    let run_sh = dir.join("run.sh");
+    if !run_sh.exists() {
+        fs::write(&run_sh, crate::cmds::new::RUN_SH)?;
+        fs::set_permissions(&run_sh, fs::Permissions::from_mode(0o755))?;
+    }
+    fs::create_dir_all(dir.join("logs"))?;
 
     let mut reg = Registry::load();
     if reg.bots.contains_key(&name) {

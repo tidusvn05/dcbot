@@ -29,6 +29,59 @@ dcbot doctor            # カレント dir のデプロイをヘルスチェッ�
 
 tmux セッション内では claude が `DISCORD_STATE_DIR=<dir>/.discord-state` 付きで動作 — ボットへの DM がそのセッションに届きます。
 
+## ガイド
+
+### 新規セットアップ — `plugin install` から起動まで
+
+要件: `claude` (Claude Code), `tmux`, `bun`, Discord アカウント。
+
+```bash
+# 1. チャネルプラグインをインストール — 任意の claude セッション内で:
+/plugin install discord@claude-plugins-official
+
+# 2. dcbot をインストール:
+curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
+
+# 3. デプロイを作成。ウィザードが Developer Portal の手順を表示
+#    (New Application → Bot → Reset Token → Message Content Intent
+#    有効化 → 招待 URL)、トークンを live 検証し、あなたの Discord
+#    snowflake で access.json をシード (allowlist モード — pairing
+#    不要)、run.sh を生成して registry に登録します:
+dcbot new helper                 # ./helper/ を作成
+dcbot new helper --dir ~/bots/x  # または任意のパス
+dcbot new helper --here          # またはカレント dir にデプロイ
+
+# 4. 起動:
+dcbot start helper               # tmux セッション dcbot-helper
+dcbot attach helper              # claude セッションにアタッチ
+```
+
+ボットに DM — snowflake をシード済みならそのまま使えます。空のまま (pairing モード) なら、ボットがコードを返信します。`dcbot approve <code>` で承認 (デプロイ dir 内で実行、またはボット名を指定)。
+
+### 既存のグローバルボットからの移行
+
+グローバル state dir (`~/.claude/channels/discord/`) で動いているボットを dcbot 配下へ移します — 内部レイアウトは同一なので `mv` 一発です:
+
+```bash
+# 1. グローバル channel を使う claude セッションを全て停止。同一
+#    トークンを 2 プロセスで動かすと全 DM が二重配送されます。
+
+# 2. state dir をデプロイ dir へ丸ごと移動 (.env, access.json,
+#    approved/, inbox/ — allowlist, groups, pending すべて保持):
+mkdir -p ~/bots/mybot
+mv ~/.claude/channels/discord ~/bots/mybot/.discord-state
+
+# 3. 引き取り — 既存トークンを検証、bot.toml + run.sh を生成、
+#    registry に登録:
+dcbot register ~/bots/mybot
+cd ~/bots/mybot && dcbot doctor   # デプロイが健全か確認
+
+# 4. 以後は dcbot 経由でのみ起動:
+dcbot start mybot
+```
+
+移行後は `claude --channels …` を手動で起動しないでください — `DISCORD_STATE_DIR` が無いとサーバーは (空になった) グローバル dir にフォールバックし、トークン不在で exit します。state dir を move ではなくコピーした場合は、移行先が健全と確認でき次第 `~/.claude/channels/discord` を削除し、迷子セッションによるトークン重複問題の再発を防いでください。
+
 ## コマンド
 
 | Command | 説明 |

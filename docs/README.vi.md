@@ -29,6 +29,59 @@ dcbot doctor            # health-check deployment ở thư mục hiện tại
 
 Trong tmux session, claude chạy với `DISCORD_STATE_DIR=<dir>/.discord-state` — DM bot là đang nói chuyện với session đó.
 
+## Hướng dẫn
+
+### Setup mới — từ `plugin install` tới bot chạy
+
+Yêu cầu: `claude` (Claude Code), `tmux`, `bun`, tài khoản Discord.
+
+```bash
+# 1. Cài channel plugin — trong một session claude bất kỳ:
+/plugin install discord@claude-plugins-official
+
+# 2. Cài dcbot:
+curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
+
+# 3. Tạo deployment. Wizard in sẵn các bước Developer Portal
+#    (New Application → Bot → Reset Token → bật Message Content Intent
+#    → invite URL), validate token trực tiếp, seed access.json với
+#    Discord snowflake của bạn (allowlist mode — không cần pairing),
+#    ghi run.sh, và đăng ký bot:
+dcbot new helper                 # tạo ./helper/
+dcbot new helper --dir ~/bots/x  # hoặc path chỉ định
+dcbot new helper --here          # hoặc deploy ngay tại cwd
+
+# 4. Chạy:
+dcbot start helper               # tmux session dcbot-helper
+dcbot attach helper              # vào session claude
+```
+
+DM bot — nếu đã seed snowflake thì dùng được ngay. Nếu để trống (pairing mode), bot trả lời bằng code; duyệt bằng `dcbot approve <code>` (chạy trong deployment dir hoặc kèm tên bot).
+
+### Migrate từ bot global có sẵn
+
+Nếu bot đang chạy với state dir global (`~/.claude/channels/discord/`), chuyển sang dcbot — layout bên trong giống hệt nên chỉ cần một `mv`:
+
+```bash
+# 1. Dừng mọi session claude đang dùng global channel. Một token không
+#    được chạy ở 2 process — mọi DM sẽ bị deliver trùng.
+
+# 2. Move cả state dir vào deployment dir (.env, access.json,
+#    approved/, inbox/ — giữ nguyên allowlist, groups, pending):
+mkdir -p ~/bots/mybot
+mv ~/.claude/channels/discord ~/bots/mybot/.discord-state
+
+# 3. Nhận nuôi — validate token hiện có, ghi bot.toml + run.sh,
+#    đăng ký registry:
+dcbot register ~/bots/mybot
+cd ~/bots/mybot && dcbot doctor   # kiểm tra deployment ổn
+
+# 4. Từ nay chỉ start bot qua dcbot:
+dcbot start mybot
+```
+
+Sau khi move, **đừng** chạy `claude --channels …` thủ công nữa — thiếu `DISCORD_STATE_DIR` thì server rơi về global dir (giờ trống) và exit vì thiếu token. Nếu bạn đã copy (thay vì move) state dir, xóa `~/.claude/channels/discord` sau khi bot mới chạy ổn, tránh session lạc làm sống lại vấn đề trùng token.
+
 ## Commands
 
 | Command | Chức năng |

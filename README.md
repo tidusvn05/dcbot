@@ -33,6 +33,59 @@ dcbot doctor            # health-check the deployment in the current dir
 
 Inside the tmux session, claude runs with `DISCORD_STATE_DIR=<dir>/.discord-state` — DM your bot and you're talking to that session.
 
+## Guides
+
+### Fresh setup — from `plugin install` to a running bot
+
+Prereqs: `claude` (Claude Code), `tmux`, `bun`, a Discord account.
+
+```bash
+# 1. Install the channel plugin — inside any claude session:
+/plugin install discord@claude-plugins-official
+
+# 2. Install dcbot:
+curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
+
+# 3. Create a deployment. The wizard prints the Developer Portal steps
+#    (New Application → Bot → Reset Token → enable Message Content Intent
+#    → invite URL), validates your token live, seeds access.json with
+#    your Discord snowflake (allowlist mode — no pairing needed), writes
+#    run.sh, and registers the bot:
+dcbot new helper                 # creates ./helper/
+dcbot new helper --dir ~/bots/x  # or a specific path
+dcbot new helper --here          # or deploy into the current dir
+
+# 4. Run it:
+dcbot start helper               # tmux session dcbot-helper
+dcbot attach helper              # jump into the claude session
+```
+
+DM your bot — with your snowflake seeded it just works. If you left it empty (pairing mode), the bot replies with a code; approve it with `dcbot approve <code>` (run in the deployment dir or pass the bot name).
+
+### Migrating an existing global bot
+
+If your bot already runs with the global state dir (`~/.claude/channels/discord/`), move it under dcbot — the inner layout is identical, so it's a single `mv`:
+
+```bash
+# 1. Stop every claude session using the global channel. One token must
+#    not run in two processes — every DM would be delivered twice.
+
+# 2. Move the state dir into a deployment dir (.env, access.json,
+#    approved/, inbox/ — allowlist, groups and pending pairings all kept):
+mkdir -p ~/bots/mybot
+mv ~/.claude/channels/discord ~/bots/mybot/.discord-state
+
+# 3. Adopt it — validates the existing token, writes bot.toml + run.sh,
+#    registers the bot:
+dcbot register ~/bots/mybot
+cd ~/bots/mybot && dcbot doctor   # verify the deployment is healthy
+
+# 4. From now on, start the bot only through dcbot:
+dcbot start mybot
+```
+
+After the move, do **not** launch `claude --channels …` manually anymore — without `DISCORD_STATE_DIR` the server falls back to the now-empty global dir and exits on a missing token. If you copied (rather than moved) the state dir, delete `~/.claude/channels/discord` once the migrated bot is verified healthy, so no stray session can resurrect the duplicate-token problem.
+
 ## Commands
 
 | Command | What it does |
