@@ -58,6 +58,15 @@ the plugin's built-in skills.
   `dcbot approve <code>` (the bot name resolves from `.discord-state`).
 - Proactive DM to an allowlisted user: `dcbot dm <text> [--to <snowflake>]`
   — works without an inbound message.
+- Replying to Discord: inbound messages arrive as `<channel
+  source="plugin:discord:discord" chat_id="...">` blocks. Always answer them
+  with the `mcp__plugin_discord_discord__reply` tool, passing `chat_id` back —
+  transcript text never reaches Discord. If the tool's schema isn't loaded
+  yet, call `ToolSearch` with `select:mcp__plugin_discord_discord__reply`
+  first, then call it.
+- `.claude/settings.json` pre-allows the discord plugin tools plus read-only
+  shell/git/dcbot commands — run them freely. Anything mutating (rm, git
+  write, interpreters, network) prompts the owner, relayed to their DMs.
 - Don't hand-edit `.discord-state/` — use the CLI so validation and the
   `approved/` marker stay correct.
 - Session lifecycle (`dcbot start|stop|restart|logs|attach`) belongs to the
@@ -74,6 +83,126 @@ pub fn write_rule(dir: &Path) -> Result<()> {
     }
     fs::create_dir_all(rule.parent().unwrap())?;
     fs::write(&rule, DCBOT_RULE)?;
+    Ok(())
+}
+
+/// Discord plugin tools the session may call without prompting. The bot runs
+/// headless — an approval dialog would stall every reply — and the plugin's
+/// own outbound gate already confines these to allowlisted chats.
+const DISCORD_TOOL_ALLOW: &[&str] = &[
+    "mcp__plugin_discord_discord__reply",
+    "mcp__plugin_discord_discord__react",
+    "mcp__plugin_discord_discord__edit_message",
+    "mcp__plugin_discord_discord__fetch_messages",
+    "mcp__plugin_discord_discord__download_attachment",
+];
+
+/// Conservative baseline so a fresh deployment is useful without an operator
+/// babysitting prompts: read-only inspection, text processing, git reads,
+/// light file ops, and read-only dcbot subcommands.
+///
+/// Deliberately excluded — anything that runs arbitrary code or mutates
+/// beyond trivial file ops still prompts (the plugin relays that prompt to
+/// the owner's DMs): interpreters (python/node/bun/sh), `find` (-exec/-delete
+/// = arbitrary exec), `xargs`, `sed`/`awk`/`tee` (write files), `rm`, network
+/// tools, env/printenv (secret leakage), git write ops, and access-mutating
+/// dcbot subcommands (allow/remove/policy/approve — a channel message must
+/// never be able to change who can reach the bot).
+const BASE_TOOL_ALLOW: &[&str] = &[
+    // Read-only inspection
+    "Bash(ls:*)",
+    "Bash(cat:*)",
+    "Bash(head:*)",
+    "Bash(tail:*)",
+    "Bash(wc:*)",
+    "Bash(file:*)",
+    "Bash(stat:*)",
+    "Bash(du:*)",
+    "Bash(df:*)",
+    "Bash(tree:*)",
+    "Bash(basename:*)",
+    "Bash(dirname:*)",
+    "Bash(realpath:*)",
+    "Bash(readlink:*)",
+    "Bash(pwd:*)",
+    "Bash(ps:*)",
+    "Bash(uptime:*)",
+    "Bash(whoami)",
+    "Bash(uname:*)",
+    "Bash(date:*)",
+    "Bash(hostname)",
+    // Text processing (no in-place writes)
+    "Bash(grep:*)",
+    "Bash(rg:*)",
+    "Bash(jq:*)",
+    "Bash(sort:*)",
+    "Bash(uniq:*)",
+    "Bash(cut:*)",
+    "Bash(tr:*)",
+    "Bash(diff:*)",
+    "Bash(comm:*)",
+    "Bash(column:*)",
+    "Bash(echo:*)",
+    "Bash(printf:*)",
+    // Git read ops — write ops (add/commit/push/checkout) still prompt
+    "Bash(git status:*)",
+    "Bash(git diff:*)",
+    "Bash(git log:*)",
+    "Bash(git show:*)",
+    "Bash(git branch:*)",
+    "Bash(git tag:*)",
+    "Bash(git blame:*)",
+    "Bash(git shortlog:*)",
+    "Bash(git describe:*)",
+    "Bash(git rev-parse:*)",
+    "Bash(git ls-files:*)",
+    "Bash(git grep:*)",
+    "Bash(git stash list:*)",
+    "Bash(git config --get:*)",
+    "Bash(git remote get-url:*)",
+    // Light file ops — no rm
+    "Bash(mkdir:*)",
+    "Bash(touch:*)",
+    "Bash(cp:*)",
+    "Bash(mv:*)",
+    // dcbot read-only subcommands — access mutations stay gated
+    "Bash(dcbot list:*)",
+    "Bash(dcbot status:*)",
+    "Bash(dcbot doctor:*)",
+    "Bash(dcbot logs:*)",
+    "Bash(dcbot invite:*)",
+    "Bash(dcbot agent)",
+];
+
+/// Ensure `.claude/settings.json` auto-allows the discord plugin's tools plus
+/// a baseline of common read-only commands. Merges into an existing file —
+/// user entries are preserved; rules already present are not duplicated.
+pub fn write_settings(dir: &Path) -> Result<()> {
+    let path = dir.join(".claude/settings.json");
+    let mut doc: serde_json::Value = if path.exists() {
+        serde_json::from_str(&fs::read_to_string(&path)?).context("parse .claude/settings.json")?
+    } else {
+        serde_json::json!({})
+    };
+    let perms = doc
+        .as_object_mut()
+        .context(".claude/settings.json is not a JSON object")?
+        .entry("permissions")
+        .or_insert_with(|| serde_json::json!({}));
+    let allow = perms
+        .as_object_mut()
+        .context(".claude/settings.json: permissions is not an object")?
+        .entry("allow")
+        .or_insert_with(|| serde_json::json!([]))
+        .as_array_mut()
+        .context(".claude/settings.json: permissions.allow is not an array")?;
+    for rule in DISCORD_TOOL_ALLOW.iter().chain(BASE_TOOL_ALLOW.iter()) {
+        if !allow.iter().any(|v| v.as_str() == Some(*rule)) {
+            allow.push(serde_json::json!(rule));
+        }
+    }
+    fs::create_dir_all(path.parent().unwrap())?;
+    fs::write(&path, serde_json::to_string_pretty(&doc)? + "\n")?;
     Ok(())
 }
 
@@ -254,6 +383,7 @@ pub fn run(opts: NewOpts) -> Result<()> {
         fs::write(&gi, format!("{gi_body}.discord-state/\n"))?;
     }
     write_rule(&dir)?;
+    write_settings(&dir)?;
 
     // --- Register -------------------------------------------------------------
     let mut reg = Registry::load();

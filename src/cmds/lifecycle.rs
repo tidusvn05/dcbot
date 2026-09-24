@@ -24,6 +24,7 @@ pub fn start(name: &str, respawn: bool) -> Result<()> {
     }
     // Same for the session rule file — deployments created before it existed.
     crate::cmds::new::write_rule(&bot.dir)?;
+    crate::cmds::new::write_settings(&bot.dir)?;
     let session = tmux::session_name(&bot.name);
     if tmux::exists(&session) {
         bail!(t!("lifecycle.already_running", name = bot.name.as_str()));

@@ -59,6 +59,7 @@ pub fn register(dir: PathBuf) -> Result<()> {
         fs::set_permissions(&run_sh, fs::Permissions::from_mode(0o755))?;
     }
     crate::cmds::new::write_rule(&dir)?;
+    crate::cmds::new::write_settings(&dir)?;
     fs::create_dir_all(dir.join("logs"))?;
 
     let mut reg = Registry::load();
