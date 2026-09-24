@@ -40,20 +40,20 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
 info "downloading ${target} (${VERSION})"
-curl -fsSL "${base}/${target}.tar.gz"     -o "${tmp}/dcbot.tar.gz" \
+curl -fsSL "${base}/${target}.tar.gz"     -o "${tmp}/${target}.tar.gz" \
   || die "download failed — check that release ${VERSION} has asset ${target}"
-curl -fsSL "${base}/${target}.tar.gz.sha256" -o "${tmp}/dcbot.tar.gz.sha256" \
+curl -fsSL "${base}/${target}.tar.gz.sha256" -o "${tmp}/${target}.tar.gz.sha256" \
   || warn "checksum file not found — skipping verification"
 
-if [ -s "${tmp}/dcbot.tar.gz.sha256" ]; then
+if [ -s "${tmp}/${target}.tar.gz.sha256" ]; then
   (cd "$tmp" && {
-    if command -v sha256sum >/dev/null; then sha256sum -c dcbot.tar.gz.sha256;
-    elif command -v shasum  >/dev/null; then shasum -a 256 -c dcbot.tar.gz.sha256;
+    if command -v sha256sum >/dev/null; then sha256sum -c "${target}.tar.gz.sha256";
+    elif command -v shasum  >/dev/null; then shasum -a 256 -c "${target}.tar.gz.sha256";
     else warn "no sha256 tool — skipping verification"; fi
   })
 fi
 
-tar -xzf "${tmp}/dcbot.tar.gz" -C "$tmp"
+tar -xzf "${tmp}/${target}.tar.gz" -C "$tmp"
 [ -f "${tmp}/dcbot" ] || die "archive did not contain a dcbot binary"
 
 mkdir -p "$BIN_DIR"
