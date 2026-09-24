@@ -43,10 +43,16 @@ nearest `.discord-state` upward.
   (validation) — then writes it to `.discord-state/.env` mode `0600`.
   It never touches any other network endpoint.
 - A token pasted in chat transits the model provider once. If the user
-  prefers not to, suggest `export DCBOT_BOT_TOKEN=<token>` first, then
-  `dcbot new <name> --yes` — nothing in chat or argv.
+  prefers not to, follow the plugin convention — they write the token
+  to the state dir's `.env` themselves, then you adopt the dir:
+
+      mkdir -p <dir>/.discord-state
+      printf 'DISCORD_BOT_TOKEN=<token>\n' > <dir>/.discord-state/.env
+      chmod 600 <dir>/.discord-state/.env
+      dcbot register <dir>   # validates token, writes bot.toml + run.sh
+
 - Never echo, log, commit, or exfiltrate the token. `--token` in argv is
-  visible to `ps` — use the env var on shared machines.
+  visible to `ps` — prefer the `.env` flow above on shared machines.
 
 ## User has no token yet → print these steps and wait
 
