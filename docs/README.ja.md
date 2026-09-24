@@ -31,6 +31,44 @@ tmux セッション内では claude が `DISCORD_STATE_DIR=<dir>/.discord-state
 
 ## ガイド
 
+### Agent-first — エージェントに任せる
+
+dcbot は usage contract を同梱しています — `dcbot agents.md` で出力
+(リポジトリの [`AGENTS.md`](../AGENTS.md) と同一)。エージェントに読ませて
+から、やりたいことを伝えるだけです:
+
+```text
+read `dcbot agents.md`
+
+今動いているボットは?
+```
+
+```text
+read `dcbot agents.md`
+
+business-bot という名前で新しいボットを作って、トークンは ...
+```
+
+```text
+read `dcbot agents.md`
+
+~/.claude/channels/discord の既存ボットを legacy-bot として dcbot に移行して
+```
+
+```text
+read `dcbot agents.md`
+
+business-bot で pairing code a4f91c を承認して
+```
+
+```text
+read `dcbot agents.md`
+
+このディレクトリのデプロイを doctor して
+```
+
+何を聞いても構いません — 1行目以降はあなたの依頼です。
+
 ### 新規セットアップ — `plugin install` から起動まで
 
 要件: `claude` (Claude Code), `tmux`, `bun`, Discord アカウント。
@@ -81,44 +119,6 @@ dcbot start mybot
 ```
 
 移行後は `claude --channels …` を手動で起動しないでください — `DISCORD_STATE_DIR` が無いとサーバーは (空になった) グローバル dir にフォールバックし、トークン不在で exit します。state dir を move ではなくコピーした場合は、移行先が健全と確認でき次第 `~/.claude/channels/discord` を削除し、迷子セッションによるトークン重複問題の再発を防いでください。
-
-## AI エージェントとの利用
-
-dcbot は usage contract を同梱しています — `dcbot agents.md` で出力
-(リポジトリの [`AGENTS.md`](../AGENTS.md) と同一)。エージェントに読ませて
-から、やりたいことを伝えるだけです:
-
-```text
-read `dcbot agents.md`
-
-今動いているボットは?
-```
-
-```text
-read `dcbot agents.md`
-
-business-bot という名前で新しいボットを作って、トークンは ...
-```
-
-```text
-read `dcbot agents.md`
-
-~/.claude/channels/discord の既存ボットを legacy-bot として dcbot に移行して
-```
-
-```text
-read `dcbot agents.md`
-
-business-bot で pairing code a4f91c を承認して
-```
-
-```text
-read `dcbot agents.md`
-
-このディレクトリのデプロイを doctor して
-```
-
-何を聞いても構いません — 1行目以降はあなたの依頼です。
 
 ## コマンド
 

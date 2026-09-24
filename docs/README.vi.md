@@ -31,6 +31,43 @@ Trong tmux session, claude chạy với `DISCORD_STATE_DIR=<dir>/.discord-state`
 
 ## Hướng dẫn
 
+### Agent-first — giao cho agent làm
+
+dcbot tự ship usage contract — `dcbot agents.md` in nó ra (cũng nằm ở
+[`AGENTS.md`](../AGENTS.md)). Chỉ cần trỏ agent tới nó rồi mô tả yêu cầu:
+
+```text
+read `dcbot agents.md`
+
+bot nào đang chạy?
+```
+
+```text
+read `dcbot agents.md`
+
+tạo bot mới tên business-bot, token là ...
+```
+
+```text
+read `dcbot agents.md`
+
+migrate bot cũ ở ~/.claude/channels/discord sang dcbot, đặt tên legacy-bot
+```
+
+```text
+read `dcbot agents.md`
+
+approve pairing code a4f91c cho business-bot
+```
+
+```text
+read `dcbot agents.md`
+
+check sức khỏe deployment ở dir này
+```
+
+Hỏi gì cũng được — phần sau dòng đầu là yêu cầu của bạn.
+
 ### Setup mới — từ `plugin install` tới bot chạy
 
 Yêu cầu: `claude` (Claude Code), `tmux`, `bun`, tài khoản Discord.
@@ -81,43 +118,6 @@ dcbot start mybot
 ```
 
 Sau khi move, **đừng** chạy `claude --channels …` thủ công nữa — thiếu `DISCORD_STATE_DIR` thì server rơi về global dir (giờ trống) và exit vì thiếu token. Nếu bạn đã copy (thay vì move) state dir, xóa `~/.claude/channels/discord` sau khi bot mới chạy ổn, tránh session lạc làm sống lại vấn đề trùng token.
-
-## Dùng với AI agent
-
-dcbot tự ship usage contract — `dcbot agents.md` in nó ra (cũng nằm ở
-[`AGENTS.md`](../AGENTS.md)). Chỉ cần trỏ agent tới nó rồi mô tả yêu cầu:
-
-```text
-read `dcbot agents.md`
-
-bot nào đang chạy?
-```
-
-```text
-read `dcbot agents.md`
-
-tạo bot mới tên business-bot, token là ...
-```
-
-```text
-read `dcbot agents.md`
-
-migrate bot cũ ở ~/.claude/channels/discord sang dcbot, đặt tên legacy-bot
-```
-
-```text
-read `dcbot agents.md`
-
-approve pairing code a4f91c cho business-bot
-```
-
-```text
-read `dcbot agents.md`
-
-check sức khỏe deployment ở dir này
-```
-
-Hỏi gì cũng được — phần sau dòng đầu là yêu cầu của bạn.
 
 ## Commands
 

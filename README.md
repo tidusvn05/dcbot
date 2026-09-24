@@ -35,6 +35,44 @@ Inside the tmux session, claude runs with `DISCORD_STATE_DIR=<dir>/.discord-stat
 
 ## Guides
 
+### Agent-first — hand it to your agent
+
+dcbot ships its own usage contract — `dcbot agents.md` prints it (also
+shipped as [`AGENTS.md`](AGENTS.md)). Point your agent at it, then ask in
+natural language:
+
+```text
+read `dcbot agents.md`
+
+which bots are running right now?
+```
+
+```text
+read `dcbot agents.md`
+
+create a new discord bot called business-bot, token is ...
+```
+
+```text
+read `dcbot agents.md`
+
+migrate my existing global discord bot into dcbot, name it legacy-bot
+```
+
+```text
+read `dcbot agents.md`
+
+approve pairing code a4f91c for business-bot
+```
+
+```text
+read `dcbot agents.md`
+
+doctor the deployment in this directory
+```
+
+Any language works — the ask after the first line is yours.
+
 ### Fresh setup — from `plugin install` to a running bot
 
 Prereqs: `claude` (Claude Code), `tmux`, `bun`, a Discord account.
@@ -85,44 +123,6 @@ dcbot start mybot
 ```
 
 After the move, do **not** launch `claude --channels …` manually anymore — without `DISCORD_STATE_DIR` the server falls back to the now-empty global dir and exits on a missing token. If you copied (rather than moved) the state dir, delete `~/.claude/channels/discord` once the migrated bot is verified healthy, so no stray session can resurrect the duplicate-token problem.
-
-## For AI agents
-
-dcbot ships its own usage contract — `dcbot agents.md` prints it (also
-shipped as [`AGENTS.md`](AGENTS.md)). Point your agent at it, then ask in
-natural language:
-
-```text
-read `dcbot agents.md`
-
-which bots are running right now?
-```
-
-```text
-read `dcbot agents.md`
-
-create a new discord bot called business-bot, token is ...
-```
-
-```text
-read `dcbot agents.md`
-
-migrate my existing global discord bot into dcbot, name it legacy-bot
-```
-
-```text
-read `dcbot agents.md`
-
-approve pairing code a4f91c for business-bot
-```
-
-```text
-read `dcbot agents.md`
-
-doctor the deployment in this directory
-```
-
-Any language works — the ask after the first line is yours.
 
 ## Commands
 
