@@ -88,52 +88,20 @@ After the move, do **not** launch `claude --channels …` manually anymore — w
 
 ## For AI agents
 
-Copy the block below into your agent's context (`AGENTS.md`, CLAUDE.md, or
-a chat message). Then just describe what you want — the agent knows the
-full command surface.
+dcbot ships its own usage contract — `dcbot agent.md` prints it (also
+shipped as [`AGENT.md`](AGENT.md)). Point your agent at it, then ask in
+natural language:
 
 ```text
-dcbot manages Discord-channel bots for Claude Code on this machine.
-Every bot lives in its own deployment dir containing .discord-state/
-(never touch the global ~/.claude/channels/discord). All commands are
-scriptable / non-interactive-safe:
+read `dcbot agent.md`
 
-  dcbot new <name> --yes [--dir <path>|--here]
-      Onboard a bot. Token comes from $DCBOT_BOT_TOKEN or --token <t>;
-      --owner <snowflake> seeds the allowlist (recommended; empty
-      leaves pairing mode), --start launches the tmux session.
-      If the user has no token yet, print these steps and wait:
-      Discord Developer Portal → New Application → Bot → Reset Token →
-      enable Message Content Intent → OAuth2 URL Generator (scope bot;
-      perms: View Channels, Send Messages, Send Messages in Threads,
-      Read Message History, Attach Files, Add Reactions) → invite the
-      bot to a shared server. The channel plugin must be installed in
-      Claude Code first: /plugin install discord@claude-plugins-official
-  dcbot register <dir>     adopt an existing deployment (has bot.toml
-                           or .discord-state); generates run.sh if missing
-  dcbot list / status [name] / doctor [name|dir]
-  dcbot start|stop|restart <name> [--respawn] / attach <name> / logs <name> [-f]
-  dcbot approve|deny <pairing-code> — codes live in .discord-state/access.json
-  dcbot allow|remove <snowflake> / policy <pairing|allowlist|disabled>
-  dcbot group add <channelId> [--no-mention] [--allow id1,id2] / group rm <channelId>
-  dcbot set <key> <value> — ackReaction, replyToMode, textChunkLimit,
-      chunkMode, mentionPatterns
-  dcbot forget <name> / prune — registry cleanup (never deletes dirs)
-
-Inside a deployment dir, <name> may be omitted (resolved via the
-nearest .discord-state upward). To migrate a global bot:
-  mv ~/.claude/channels/discord <dir>/.discord-state
-  dcbot register <dir> && cd <dir> && dcbot doctor && dcbot start <name>
-Never launch `claude --channels` outside `dcbot start` — without
-DISCORD_STATE_DIR the channel server targets the global dir, and one
-token in two processes duplicates every DM.
+which bots are running right now?
 ```
 
-Example asks (in any language):
+Example asks:
 
 - "create a new discord bot called business-bot, token is ..."
 - "migrate my existing global discord bot into dcbot, name it legacy-bot"
-- "which bots are running right now?"
 - "approve pairing code a4f91c for business-bot"
 - "doctor the deployment in this directory"
 

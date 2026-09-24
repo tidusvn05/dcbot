@@ -84,52 +84,20 @@ dcbot start mybot
 
 ## AI エージェントとの利用
 
-以下のブロックをエージェントのコンテキスト (`AGENTS.md`, CLAUDE.md,
-またはチャット) に貼り付けてください。あとはやりたいことを伝える
-だけです — エージェントは全コマンドを把握しています。
+dcbot は usage contract を同梱しています — `dcbot agent.md` で出力
+(リポジトリの [`AGENT.md`](../AGENT.md) と同一)。エージェントに読ませて
+から、やりたいことを伝えるだけです:
 
 ```text
-dcbot manages Discord-channel bots for Claude Code on this machine.
-Every bot lives in its own deployment dir containing .discord-state/
-(never touch the global ~/.claude/channels/discord). All commands are
-scriptable / non-interactive-safe:
+read `dcbot agent.md`
 
-  dcbot new <name> --yes [--dir <path>|--here]
-      Onboard a bot. Token comes from $DCBOT_BOT_TOKEN or --token <t>;
-      --owner <snowflake> seeds the allowlist (recommended; empty
-      leaves pairing mode), --start launches the tmux session.
-      If the user has no token yet, print these steps and wait:
-      Discord Developer Portal → New Application → Bot → Reset Token →
-      enable Message Content Intent → OAuth2 URL Generator (scope bot;
-      perms: View Channels, Send Messages, Send Messages in Threads,
-      Read Message History, Attach Files, Add Reactions) → invite the
-      bot to a shared server. The channel plugin must be installed in
-      Claude Code first: /plugin install discord@claude-plugins-official
-  dcbot register <dir>     adopt an existing deployment (has bot.toml
-                           or .discord-state); generates run.sh if missing
-  dcbot list / status [name] / doctor [name|dir]
-  dcbot start|stop|restart <name> [--respawn] / attach <name> / logs <name> [-f]
-  dcbot approve|deny <pairing-code> — codes live in .discord-state/access.json
-  dcbot allow|remove <snowflake> / policy <pairing|allowlist|disabled>
-  dcbot group add <channelId> [--no-mention] [--allow id1,id2] / group rm <channelId>
-  dcbot set <key> <value> — ackReaction, replyToMode, textChunkLimit,
-      chunkMode, mentionPatterns
-  dcbot forget <name> / prune — registry cleanup (never deletes dirs)
-
-Inside a deployment dir, <name> may be omitted (resolved via the
-nearest .discord-state upward). To migrate a global bot:
-  mv ~/.claude/channels/discord <dir>/.discord-state
-  dcbot register <dir> && cd <dir> && dcbot doctor && dcbot start <name>
-Never launch `claude --channels` outside `dcbot start` — without
-DISCORD_STATE_DIR the channel server targets the global dir, and one
-token in two processes duplicates every DM.
+今動いているボットは?
 ```
 
 依頼の例:
 
 - "business-bot という名前で新しいボットを作って、トークンは ..."
 - "~/.claude/channels/discord の既存ボットを legacy-bot として dcbot に移行して"
-- "今動いているボットは?"
 - "business-bot で pairing code a4f91c を承認して"
 - "このディレクトリのデプロイを doctor して"
 
