@@ -16,10 +16,6 @@ Why: the official plugin keeps state in one global directory and its `/discord:a
 curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 ```
 
-Pin a version: `curl -fsSL …/install.sh | DCBOT_VERSION=v0.1.0 bash`
-
-Or from source: `cargo install --path .` (Rust stable).
-
 **Requirements:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with the discord plugin (`/plugin install discord@claude-plugins-official`), `tmux`, `bun`. Linux & macOS.
 
 ## Quick start
@@ -175,6 +171,20 @@ Name arguments are optional inside a deployment dir — dcbot resolves the bot b
 - `approve` moves a pending `senderId` into `allowFrom` and drops the `approved/<senderId>` marker the server polls for.
 - Guild channels are opt-in per **channel** snowflake; threads inherit the parent; `requireMention` defaults to true.
 - `dcbot new` seeds `allowlist` with your snowflake when provided — the lockdown the plugin recommends.
+
+## Other install options
+
+Pin a release:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | DCBOT_VERSION=v0.3.0 bash
+```
+
+From source (Rust stable):
+
+```bash
+cargo install --path .
+```
 
 ## License
 

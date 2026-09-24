@@ -12,10 +12,6 @@ Lý do: plugin gốc giữ state ở một thư mục global và skill `/discord
 curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 ```
 
-Pin version: `curl -fsSL …/install.sh | DCBOT_VERSION=v0.1.0 bash`
-
-Hoặc từ source: `cargo install --path .` (Rust stable).
-
 **Yêu cầu:** Claude Code + discord plugin (`/plugin install discord@claude-plugins-official`), `tmux`, `bun`. Linux & macOS.
 
 ## Quick start
@@ -170,6 +166,20 @@ Tham số tên có thể bỏ trống khi đứng trong deployment dir — dcbot
 - `approve` chuyển `senderId` pending vào `allowFrom` và ghi marker `approved/<senderId>` mà server poll.
 - Guild channel opt-in theo **channel** snowflake; thread kế thừa parent; `requireMention` mặc định true.
 - `dcbot new` seed sẵn `allowlist` với snowflake của bạn — đúng khuyến nghị lockdown của plugin.
+
+## Tùy chọn cài đặt khác
+
+Pin version:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | DCBOT_VERSION=v0.3.0 bash
+```
+
+Từ source (Rust stable):
+
+```bash
+cargo install --path .
+```
 
 ## License
 

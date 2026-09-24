@@ -12,10 +12,6 @@
 curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 ```
 
-バージョン指定: `curl -fsSL …/install.sh | DCBOT_VERSION=v0.1.0 bash`
-
-ソースから: `cargo install --path .` (Rust stable)
-
 **要件:** Claude Code + discord プラグイン (`/plugin install discord@claude-plugins-official`), `tmux`, `bun`。Linux & macOS。
 
 ## クイックスタート
@@ -171,6 +167,20 @@ dcbot start mybot
 - `approve` は pending の `senderId` を `allowFrom` に移し、サーバーがポーリングする `approved/<senderId>` マーカーを書き込みます。
 - guild チャンネルは **チャンネル** snowflake 単位で opt-in、スレッドは親を継承、`requireMention` はデフォルト true。
 - `dcbot new` は snowflake 指定時に `allowlist` をシード — プラグインが推奨するロックダウン状態です。
+
+## その他のインストール方法
+
+バージョン指定:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | DCBOT_VERSION=v0.3.0 bash
+```
+
+ソースから (Rust stable):
+
+```bash
+cargo install --path .
+```
 
 ## License
 
