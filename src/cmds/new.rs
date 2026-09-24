@@ -65,9 +65,8 @@ the plugin's built-in skills.
   yet, call `ToolSearch` with `select:mcp__plugin_discord_discord__reply`
   first, then call it.
 - `.claude/settings.json` pre-allows the discord plugin tools, the standard
-  toolset (Edit/Write/WebFetch/Agent/…), and read-only shell/git/dcbot
-  commands — run them freely. Unusual shell commands (rm, interpreters,
-  network) prompt the owner, relayed to their DMs.
+  toolset (Edit/Write/WebFetch/Agent/…), and unrestricted Bash — commands
+  run without prompting, so prefer `dcbot` CLI over hand-editing state.
 - Don't hand-edit `.discord-state/` — use the CLI so validation and the
   `approved/` marker stay correct.
 - Session lifecycle (`dcbot start|stop|restart|logs|attach`) belongs to the
@@ -100,20 +99,21 @@ const DISCORD_TOOL_ALLOW: &[&str] = &[
 
 /// Baseline so a fresh deployment works like a normal session without an
 /// operator babysitting prompts: the standard toolset (edit/write/web/agent/
-/// task tools), read-only shell inspection, text processing, git reads,
-/// light file ops, and read-only dcbot subcommands.
+/// task tools) plus unrestricted `Bash` — the bot runs headless and an
+/// approval dialog would stall every reply.
 ///
-/// Deliberately excluded — unusual shell commands still prompt (the plugin
-/// relays that prompt to the owner's DMs): interpreters (python/node/bun/sh),
-/// `find` (-exec/-delete = arbitrary exec), `xargs`, `sed`/`awk`/`tee` (write
-/// files), `rm`, network tools, env/printenv (secret leakage), git write ops,
-/// and access-mutating dcbot subcommands (allow/remove/policy/approve — a
-/// channel message must never be able to change who can reach the bot).
+/// Note: bare `Bash` lifts the earlier guardrails — `rm`, interpreters,
+/// network tools, `env`/`printenv` (secret leakage), git write ops, and
+/// access-mutating dcbot subcommands (allow/remove/policy/approve) no
+/// longer prompt either; anyone who can reach the bot effectively has a
+/// shell in the deployment dir. The curated `Bash(cmd:*)` entries below
+/// are kept as documentation and a downgrade path — `Bash` subsumes them.
 const BASE_TOOL_ALLOW: &[&str] = &[
     // Standard toolset — the everyday tools an interactive session uses
     "Agent",
     "Artifact",
     "AskUserQuestion",
+    "Bash",
     "BashOutput",
     "CronCreate",
     "CronDelete",
