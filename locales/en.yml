@@ -19,6 +19,7 @@ new:
          (required so the bot can DM you)
   guide_ready: "Ready to continue"
   token_prompt: "Paste the Discord bot token"
+  token_required: "non-interactive mode needs --token <TOKEN> or DCBOT_BOT_TOKEN env"
   token_ok: "token valid — bot identity: %{tag} (%{id})"
   owner_prompt: "Your Discord user ID snowflake (empty = keep pairing mode)"
   owner_invalid: "'%{id}' is not a numeric Discord snowflake (17-20 digits)"

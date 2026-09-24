@@ -12,6 +12,16 @@ use crate::manifest::{self, Manifest};
 use crate::registry::{Entry, Registry};
 use crate::state::{self, Access};
 
+pub struct NewOpts {
+    pub name: String,
+    pub dir: Option<PathBuf>,
+    pub here: bool,
+    pub token: Option<String>,
+    pub owner: Option<String>,
+    pub yes: bool,
+    pub start: bool,
+}
+
 pub const RUN_SH: &str = r#"#!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -28,7 +38,11 @@ else
 fi
 "#;
 
-pub fn run(name: &str, dir: Option<PathBuf>, here: bool) -> Result<()> {
+pub fn run(opts: NewOpts) -> Result<()> {
+    let env_token = std::env::var("DCBOT_BOT_TOKEN")
+        .ok()
+        .filter(|t| !t.is_empty());
+    let noninteractive = opts.yes || opts.token.is_some() || env_token.is_some();
     let theme = ColorfulTheme::default();
 
     // Prereqs — warn but don't block; the user may install them later.
@@ -45,40 +59,58 @@ pub fn run(name: &str, dir: Option<PathBuf>, here: bool) -> Result<()> {
         );
     }
 
-    let dir = if here {
+    let dir = if opts.here {
         std::env::current_dir()?
     } else {
-        dir.unwrap_or_else(|| std::env::current_dir().unwrap().join(name))
+        opts.dir
+            .unwrap_or_else(|| std::env::current_dir().unwrap().join(&opts.name))
     };
     if dir.join(".discord-state").exists() {
         bail!(t!("new.dir_exists", dir = dir.display()));
     }
-    if Registry::load().bots.contains_key(name) {
-        bail!(t!("new.name_taken", name = name));
+    if Registry::load().bots.contains_key(&opts.name) {
+        bail!(t!("new.name_taken", name = opts.name.as_str()));
     }
 
-    println!("{}", t!("new.guide"));
-    let _ = Confirm::with_theme(&theme)
-        .with_prompt(t!("new.guide_ready").to_string())
-        .default(true)
-        .interact()?;
+    if !noninteractive {
+        println!("{}", t!("new.guide"));
+        let _ = Confirm::with_theme(&theme)
+            .with_prompt(t!("new.guide_ready").to_string())
+            .default(true)
+            .interact()?;
+    }
 
     // Token → validate against Discord → confirm identity.
-    let token = Password::with_theme(&theme)
-        .with_prompt(t!("new.token_prompt").to_string())
-        .interact()?;
-    let bot = discord::fetch_me(token.trim())?;
+    let token = match opts.token.or(env_token) {
+        Some(tok) => tok.trim().to_string(),
+        None => {
+            if noninteractive {
+                bail!(t!("new.token_required"));
+            }
+            Password::with_theme(&theme)
+                .with_prompt(t!("new.token_prompt").to_string())
+                .interact()?
+                .trim()
+                .to_string()
+        }
+    };
+    let bot = discord::fetch_me(&token)?;
     println!(
         "{}",
         t!("new.token_ok", tag = bot.tag(), id = bot.id.as_str())
     );
 
     // Owner snowflake — empty keeps pairing mode.
-    let owner = Input::<String>::with_theme(&theme)
-        .with_prompt(t!("new.owner_prompt").to_string())
-        .allow_empty(true)
-        .interact_text()?;
-    let owner = owner.trim().to_string();
+    let owner = match opts.owner {
+        Some(o) => o.trim().to_string(),
+        None if noninteractive => String::new(),
+        None => Input::<String>::with_theme(&theme)
+            .with_prompt(t!("new.owner_prompt").to_string())
+            .allow_empty(true)
+            .interact_text()?
+            .trim()
+            .to_string(),
+    };
     if !owner.is_empty() && !is_snowflake(&owner) {
         bail!(t!("new.owner_invalid", id = owner.as_str()));
     }
@@ -90,7 +122,7 @@ pub fn run(name: &str, dir: Option<PathBuf>, here: bool) -> Result<()> {
     fs::create_dir_all(dir.join("logs"))?;
 
     let env_file = state_dir.join(".env");
-    fs::write(&env_file, format!("DISCORD_BOT_TOKEN={}\n", token.trim()))?;
+    fs::write(&env_file, format!("DISCORD_BOT_TOKEN={token}\n"))?;
     fs::set_permissions(&env_file, fs::Permissions::from_mode(0o600))?;
 
     let mut access = Access::default();
@@ -101,7 +133,7 @@ pub fn run(name: &str, dir: Option<PathBuf>, here: bool) -> Result<()> {
     state::save(&state_dir, &access)?;
 
     let manifest = Manifest {
-        name: name.to_string(),
+        name: opts.name.clone(),
         bot_user_id: bot.id.clone(),
         bot_tag: bot.tag(),
         created_at: chrono::Utc::now().to_rfc3339(),
@@ -123,7 +155,7 @@ pub fn run(name: &str, dir: Option<PathBuf>, here: bool) -> Result<()> {
     // --- Register -------------------------------------------------------------
     let mut reg = Registry::load();
     reg.add(
-        name,
+        &opts.name,
         Entry {
             dir: std::fs::canonicalize(&dir).unwrap_or(dir.clone()),
             bot_user_id: bot.id.clone(),
@@ -139,14 +171,16 @@ pub fn run(name: &str, dir: Option<PathBuf>, here: bool) -> Result<()> {
         t!("new.created", dir = dir.display())
     );
 
-    if Confirm::with_theme(&theme)
-        .with_prompt(t!("new.start_now").to_string())
-        .default(true)
-        .interact()?
-    {
-        lifecycle::start(name, false).context("start failed")?;
+    let do_start = opts.start
+        || (!noninteractive
+            && Confirm::with_theme(&theme)
+                .with_prompt(t!("new.start_now").to_string())
+                .default(true)
+                .interact()?);
+    if do_start {
+        lifecycle::start(&opts.name, false).context("start failed")?;
     } else {
-        println!("{}", t!("new.start_hint", name = name));
+        println!("{}", t!("new.start_hint", name = opts.name.as_str()));
     }
     Ok(())
 }

@@ -32,7 +32,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Interactive wizard: create a new bot deployment
+    /// Create a new bot deployment (interactive wizard, or flags for agents)
     New {
         /// Bot name (registry key + tmux session suffix)
         name: String,
@@ -42,6 +42,18 @@ enum Commands {
         /// Deploy in the current directory
         #[arg(long)]
         here: bool,
+        /// Discord bot token (non-interactive; or set DCBOT_BOT_TOKEN)
+        #[arg(long)]
+        token: Option<String>,
+        /// Your Discord user snowflake — seeds the allowlist
+        #[arg(long)]
+        owner: Option<String>,
+        /// Non-interactive: no prompts (requires --token or DCBOT_BOT_TOKEN)
+        #[arg(long)]
+        yes: bool,
+        /// Start the tmux session right after creating
+        #[arg(long)]
+        start: bool,
     },
     /// Adopt an existing deployment dir into the registry
     Register { dir: PathBuf },
@@ -156,7 +168,23 @@ fn main() -> Result<()> {
     }
 
     match cli.command {
-        Commands::New { name, dir, here } => cmds::new::run(&name, dir, here),
+        Commands::New {
+            name,
+            dir,
+            here,
+            token,
+            owner,
+            yes,
+            start,
+        } => cmds::new::run(cmds::new::NewOpts {
+            name,
+            dir,
+            here,
+            token,
+            owner,
+            yes,
+            start,
+        }),
         Commands::Register { dir } => cmds::registry_cmds::register(dir),
         Commands::Forget { name } => cmds::registry_cmds::forget(&name),
         Commands::Prune => cmds::registry_cmds::prune(),

@@ -25,8 +25,8 @@ Or from source: `cargo install --path .` (Rust stable).
 ## Quick start
 
 ```bash
-dcbot new helper        # wizard: portal guide → token → validate → seed allowlist
-dcbot attach helper     # jump into the tmux session running claude
+dcbot new business-bot        # wizard: portal guide → token → validate → seed allowlist
+dcbot attach business-bot     # jump into the tmux session running claude
 dcbot list              # all bots on this machine
 dcbot doctor            # health-check the deployment in the current dir
 ```
@@ -51,13 +51,13 @@ curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | b
 #    → invite URL), validates your token live, seeds access.json with
 #    your Discord snowflake (allowlist mode — no pairing needed), writes
 #    run.sh, and registers the bot:
-dcbot new helper                 # creates ./helper/
-dcbot new helper --dir ~/bots/x  # or a specific path
-dcbot new helper --here          # or deploy into the current dir
+dcbot new business-bot                 # creates ./business-bot/
+dcbot new business-bot --dir ~/bots/x  # or a specific path
+dcbot new business-bot --here          # or deploy into the current dir
 
 # 4. Run it:
-dcbot start helper               # tmux session dcbot-helper
-dcbot attach helper              # jump into the claude session
+dcbot start business-bot               # tmux session dcbot-business-bot
+dcbot attach business-bot              # jump into the claude session
 ```
 
 DM your bot — with your snowflake seeded it just works. If you left it empty (pairing mode), the bot replies with a code; approve it with `dcbot approve <code>` (run in the deployment dir or pass the bot name).
@@ -86,11 +86,62 @@ dcbot start mybot
 
 After the move, do **not** launch `claude --channels …` manually anymore — without `DISCORD_STATE_DIR` the server falls back to the now-empty global dir and exits on a missing token. If you copied (rather than moved) the state dir, delete `~/.claude/channels/discord` once the migrated bot is verified healthy, so no stray session can resurrect the duplicate-token problem.
 
+## For AI agents
+
+Copy the block below into your agent's context (`AGENTS.md`, CLAUDE.md, or
+a chat message). Then just describe what you want — the agent knows the
+full command surface.
+
+```text
+dcbot manages Discord-channel bots for Claude Code on this machine.
+Every bot lives in its own deployment dir containing .discord-state/
+(never touch the global ~/.claude/channels/discord). All commands are
+scriptable / non-interactive-safe:
+
+  dcbot new <name> --yes [--dir <path>|--here]
+      Onboard a bot. Token comes from $DCBOT_BOT_TOKEN or --token <t>;
+      --owner <snowflake> seeds the allowlist (recommended; empty
+      leaves pairing mode), --start launches the tmux session.
+      If the user has no token yet, print these steps and wait:
+      Discord Developer Portal → New Application → Bot → Reset Token →
+      enable Message Content Intent → OAuth2 URL Generator (scope bot;
+      perms: View Channels, Send Messages, Send Messages in Threads,
+      Read Message History, Attach Files, Add Reactions) → invite the
+      bot to a shared server. The channel plugin must be installed in
+      Claude Code first: /plugin install discord@claude-plugins-official
+  dcbot register <dir>     adopt an existing deployment (has bot.toml
+                           or .discord-state); generates run.sh if missing
+  dcbot list / status [name] / doctor [name|dir]
+  dcbot start|stop|restart <name> [--respawn] / attach <name> / logs <name> [-f]
+  dcbot approve|deny <pairing-code> — codes live in .discord-state/access.json
+  dcbot allow|remove <snowflake> / policy <pairing|allowlist|disabled>
+  dcbot group add <channelId> [--no-mention] [--allow id1,id2] / group rm <channelId>
+  dcbot set <key> <value> — ackReaction, replyToMode, textChunkLimit,
+      chunkMode, mentionPatterns
+  dcbot forget <name> / prune — registry cleanup (never deletes dirs)
+
+Inside a deployment dir, <name> may be omitted (resolved via the
+nearest .discord-state upward). To migrate a global bot:
+  mv ~/.claude/channels/discord <dir>/.discord-state
+  dcbot register <dir> && cd <dir> && dcbot doctor && dcbot start <name>
+Never launch `claude --channels` outside `dcbot start` — without
+DISCORD_STATE_DIR the channel server targets the global dir, and one
+token in two processes duplicates every DM.
+```
+
+Example asks (in any language):
+
+- "create a new discord bot called business-bot, token is ..."
+- "migrate my existing global discord bot into dcbot, name it legacy-bot"
+- "which bots are running right now?"
+- "approve pairing code a4f91c for business-bot"
+- "doctor the deployment in this directory"
+
 ## Commands
 
 | Command | What it does |
 | --- | --- |
-| `dcbot new <name> [--dir p \| --here]` | Onboarding wizard — creates dir, `.discord-state/.env` (600), seeded `access.json`, `bot.toml`, `run.sh`, `.gitignore`; registers the bot |
+| `dcbot new <name> [--dir p \| --here \| --yes]` | Onboarding wizard — creates dir, `.discord-state/.env` (600), seeded `access.json`, `bot.toml`, `run.sh`, `.gitignore`; registers the bot. `--yes` runs non-interactively (`--token`/`$DCBOT_BOT_TOKEN`, `--owner`, `--start`) — agent-friendly |
 | `dcbot start/stop/restart <name>` | tmux lifecycle (`--respawn` auto-restarts claude on exit) |
 | `dcbot attach <name>` | `tmux attach -t dcbot-<name>` |
 | `dcbot logs <name> [-f]` | Tail the session pane |

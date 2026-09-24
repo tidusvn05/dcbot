@@ -21,8 +21,8 @@ curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | b
 ## クイックスタート
 
 ```bash
-dcbot new helper        # ウィザード: ポータル手順 → トークン → 検証 → allowlist シード
-dcbot attach helper     # claude が動く tmux セッションへアタッチ
+dcbot new business-bot        # ウィザード: ポータル手順 → トークン → 検証 → allowlist シード
+dcbot attach business-bot     # claude が動く tmux セッションへアタッチ
 dcbot list              # マシン上の全ボット
 dcbot doctor            # カレント dir のデプロイをヘルスチェック
 ```
@@ -47,13 +47,13 @@ curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | b
 #    有効化 → 招待 URL)、トークンを live 検証し、あなたの Discord
 #    snowflake で access.json をシード (allowlist モード — pairing
 #    不要)、run.sh を生成して registry に登録します:
-dcbot new helper                 # ./helper/ を作成
-dcbot new helper --dir ~/bots/x  # または任意のパス
-dcbot new helper --here          # またはカレント dir にデプロイ
+dcbot new business-bot                 # ./business-bot/ を作成
+dcbot new business-bot --dir ~/bots/x  # または任意のパス
+dcbot new business-bot --here          # またはカレント dir にデプロイ
 
 # 4. 起動:
-dcbot start helper               # tmux セッション dcbot-helper
-dcbot attach helper              # claude セッションにアタッチ
+dcbot start business-bot               # tmux セッション dcbot-business-bot
+dcbot attach business-bot              # claude セッションにアタッチ
 ```
 
 ボットに DM — snowflake をシード済みならそのまま使えます。空のまま (pairing モード) なら、ボットがコードを返信します。`dcbot approve <code>` で承認 (デプロイ dir 内で実行、またはボット名を指定)。
@@ -82,11 +82,62 @@ dcbot start mybot
 
 移行後は `claude --channels …` を手動で起動しないでください — `DISCORD_STATE_DIR` が無いとサーバーは (空になった) グローバル dir にフォールバックし、トークン不在で exit します。state dir を move ではなくコピーした場合は、移行先が健全と確認でき次第 `~/.claude/channels/discord` を削除し、迷子セッションによるトークン重複問題の再発を防いでください。
 
+## AI エージェントとの利用
+
+以下のブロックをエージェントのコンテキスト (`AGENTS.md`, CLAUDE.md,
+またはチャット) に貼り付けてください。あとはやりたいことを伝える
+だけです — エージェントは全コマンドを把握しています。
+
+```text
+dcbot manages Discord-channel bots for Claude Code on this machine.
+Every bot lives in its own deployment dir containing .discord-state/
+(never touch the global ~/.claude/channels/discord). All commands are
+scriptable / non-interactive-safe:
+
+  dcbot new <name> --yes [--dir <path>|--here]
+      Onboard a bot. Token comes from $DCBOT_BOT_TOKEN or --token <t>;
+      --owner <snowflake> seeds the allowlist (recommended; empty
+      leaves pairing mode), --start launches the tmux session.
+      If the user has no token yet, print these steps and wait:
+      Discord Developer Portal → New Application → Bot → Reset Token →
+      enable Message Content Intent → OAuth2 URL Generator (scope bot;
+      perms: View Channels, Send Messages, Send Messages in Threads,
+      Read Message History, Attach Files, Add Reactions) → invite the
+      bot to a shared server. The channel plugin must be installed in
+      Claude Code first: /plugin install discord@claude-plugins-official
+  dcbot register <dir>     adopt an existing deployment (has bot.toml
+                           or .discord-state); generates run.sh if missing
+  dcbot list / status [name] / doctor [name|dir]
+  dcbot start|stop|restart <name> [--respawn] / attach <name> / logs <name> [-f]
+  dcbot approve|deny <pairing-code> — codes live in .discord-state/access.json
+  dcbot allow|remove <snowflake> / policy <pairing|allowlist|disabled>
+  dcbot group add <channelId> [--no-mention] [--allow id1,id2] / group rm <channelId>
+  dcbot set <key> <value> — ackReaction, replyToMode, textChunkLimit,
+      chunkMode, mentionPatterns
+  dcbot forget <name> / prune — registry cleanup (never deletes dirs)
+
+Inside a deployment dir, <name> may be omitted (resolved via the
+nearest .discord-state upward). To migrate a global bot:
+  mv ~/.claude/channels/discord <dir>/.discord-state
+  dcbot register <dir> && cd <dir> && dcbot doctor && dcbot start <name>
+Never launch `claude --channels` outside `dcbot start` — without
+DISCORD_STATE_DIR the channel server targets the global dir, and one
+token in two processes duplicates every DM.
+```
+
+依頼の例:
+
+- "business-bot という名前で新しいボットを作って、トークンは ..."
+- "~/.claude/channels/discord の既存ボットを legacy-bot として dcbot に移行して"
+- "今動いているボットは?"
+- "business-bot で pairing code a4f91c を承認して"
+- "このディレクトリのデプロイを doctor して"
+
 ## コマンド
 
 | Command | 説明 |
 | --- | --- |
-| `dcbot new <name> [--dir p \| --here]` | オンボードウィザード — dir, `.env` (600), `access.json` シード, `bot.toml`, `run.sh`, `.gitignore` を生成し registry 登録 |
+| `dcbot new <name> [--dir p \| --here \| --yes]` | オンボードウィザード — dir, `.env` (600), `access.json` シード, `bot.toml`, `run.sh`, `.gitignore` を生成し registry 登録 (`--yes` で非対話モード: `--token`/`$DCBOT_BOT_TOKEN`, `--owner`, `--start` — エージェント向け) |
 | `dcbot start/stop/restart <name>` | tmux ライフサイクル (`--respawn` で claude 自動再起動) |
 | `dcbot attach <name>` | `tmux attach -t dcbot-<name>` |
 | `dcbot logs <name> [-f]` | セッション出力を表示 |
