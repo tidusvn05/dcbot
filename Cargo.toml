@@ -1,6 +1,6 @@
 [package]
 name = "dcbot"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Onboard and manage Discord-channel bots for Claude Code — per-directory state, tmux lifecycle, access control."
