@@ -94,8 +94,9 @@ dcbot new business-bot                 # creates ./business-bot/
 dcbot new business-bot --dir ~/bots/x  # or a specific path
 dcbot new business-bot --here          # or deploy into the current dir
 
-# 3. Run it — auto-installs the plugin, DMs the owner once the
-#    session is up (pairing mode: nobody to greet, skipped):
+# 3. Run it — auto-installs the plugin, greets the owner via DM and
+#    every configured channel once the session is up (nothing
+#    configured: skipped):
 dcbot start business-bot               # tmux session dcbot-business-bot
 dcbot attach business-bot              # jump into the claude session
 ```
@@ -142,6 +143,7 @@ After the move, do **not** launch `claude --channels …` manually anymore — w
 | `dcbot deny / allow / remove / policy` | Manage `access.json` for the bot in cwd (or named) |
 | `dcbot group add/rm <channelId>` | Guild-channel opt-in (`--no-mention`, `--allow ids`) |
 | `dcbot set <key> <value>` | `ackReaction`, `replyToMode`, `textChunkLimit`, `chunkMode`, `mentionPatterns` |
+| `dcbot dm <text> [--to id]` | DM an allowlisted user via the Discord API — no inbound message needed |
 | `dcbot register <dir> / forget / prune` | Registry management & drift cleanup |
 | `dcbot config set lang <en\|vi\|ja>` | Persist UI language |
 | `dcbot completions <shell>` | Shell completions |

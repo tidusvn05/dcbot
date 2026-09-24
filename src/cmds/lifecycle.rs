@@ -73,15 +73,13 @@ pub fn start(name: &str, respawn: bool) -> Result<()> {
     Ok(())
 }
 
-/// DM the first allowlisted user that the bot is up — proves the token
-/// works end-to-end and gives the owner a channel to reply in. Skipped
-/// in pairing mode (nobody to greet). Best-effort: the session is already
-/// running, failures only warn.
+/// Announce that the bot is up: DM the first allowlisted user and post to
+/// every configured guild channel — proves the token works end-to-end and
+/// gives the owner a channel to reply in. Skipped in pairing mode with no
+/// groups (nobody to greet). Best-effort: the session is already running,
+/// failures only warn.
 fn greet(bot: &Resolved) {
     let Ok(access) = state::load(&bot.state_dir) else {
-        return;
-    };
-    let Some(owner) = access.allow_from.first() else {
         return;
     };
     let Some(token) = state::read_token(&bot.state_dir) else {
@@ -94,17 +92,39 @@ fn greet(bot: &Resolved) {
         session = session.as_str(),
         dir = bot.dir.display().to_string().as_str()
     );
-    match discord::open_dm(&token, owner).and_then(|ch| discord::send_message(&token, &ch, &text)) {
-        Ok(()) => println!(
-            "{} {}",
-            style("✓").green().bold(),
-            t!("lifecycle.greeted", owner = owner.as_str())
-        ),
-        Err(e) => eprintln!(
-            "{} {}",
-            style(t!("common.warn")).yellow().bold(),
-            t!("lifecycle.greet_failed", err = e.to_string())
-        ),
+    if let Some(owner) = access.allow_from.first() {
+        match discord::open_dm(&token, owner)
+            .and_then(|ch| discord::send_message(&token, &ch, &text))
+        {
+            Ok(()) => println!(
+                "{} {}",
+                style("✓").green().bold(),
+                t!("lifecycle.greeted", owner = owner.as_str())
+            ),
+            Err(e) => eprintln!(
+                "{} {}",
+                style(t!("common.warn")).yellow().bold(),
+                t!("lifecycle.greet_failed", err = e.to_string())
+            ),
+        }
+    }
+    for channel in access.groups.keys() {
+        match discord::send_message(&token, channel, &text) {
+            Ok(()) => println!(
+                "{} {}",
+                style("✓").green().bold(),
+                t!("lifecycle.greeted_channel", channel = channel.as_str())
+            ),
+            Err(e) => eprintln!(
+                "{} {}",
+                style(t!("common.warn")).yellow().bold(),
+                t!(
+                    "lifecycle.greet_channel_failed",
+                    channel = channel.as_str(),
+                    err = e.to_string()
+                )
+            ),
+        }
     }
 }
 

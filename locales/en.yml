@@ -39,7 +39,15 @@ lifecycle:
   greeting_text: "dcbot `%{name}` is online — tmux `%{session}`, dir `%{dir}`"
   greeted: "greeted %{owner} on Discord"
   greet_failed: "couldn't DM the greeting to the owner: %{err}"
+  greeted_channel: "greeted channel %{channel} on Discord"
+  greet_channel_failed: "couldn't greet channel %{channel}: %{err}"
   not_running: "bot '%{name}' is not running — `dcbot start %{name}` first."
+
+dm:
+  sent: "DM sent to %{user} via '%{bot}'"
+  no_recipient: "nobody to DM — the allowlist is empty (`dcbot allow <snowflake>` first, or pass --to)"
+  not_allowed: "'%{id}' is not in '%{bot}' allowlist — refusing to DM (add with `dcbot allow %{id}`)"
+  no_token: "no bot token — .discord-state/.env is missing DISCORD_BOT_TOKEN"
 
 list:
   col_name: "NAME"

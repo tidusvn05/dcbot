@@ -91,7 +91,8 @@ dcbot new business-bot --dir ~/bots/x  # または任意のパス
 dcbot new business-bot --here          # またはカレント dir にデプロイ
 
 # 3. 起動 — プラグインを自動インストールし、セッションが立ち上がると
-#    owner に greeting を DM (pairing モード: 送信先なし、スキップ):
+#    owner への DM と設定済みの全チャンネルに greeting を送信
+#    (設定なし: スキップ):
 dcbot start business-bot               # tmux セッション dcbot-business-bot
 dcbot attach business-bot              # claude セッションにアタッチ
 ```
@@ -138,6 +139,7 @@ dcbot start mybot
 | `dcbot deny / allow / remove / policy` | cwd (または名前指定) のボットの `access.json` を管理 |
 | `dcbot group add/rm <channelId>` | guild チャンネル opt-in (`--no-mention`, `--allow ids`) |
 | `dcbot set <key> <value>` | `ackReaction`, `replyToMode`, `textChunkLimit`, `chunkMode`, `mentionPatterns` |
+| `dcbot dm <text> [--to id]` | allowlist 内のユーザーへ Discord API 経由で DM — inbound メッセージ不要 |
 | `dcbot register <dir> / forget / prune` | registry 管理・ドリフト整理 |
 | `dcbot config set lang <en\|vi\|ja>` | UI 言語を保存 |
 | `dcbot completions <shell>` | シェル補完 |

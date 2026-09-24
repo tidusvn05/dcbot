@@ -89,8 +89,8 @@ dcbot new business-bot                 # tạo ./business-bot/
 dcbot new business-bot --dir ~/bots/x  # hoặc path chỉ định
 dcbot new business-bot --here          # hoặc deploy ngay tại cwd
 
-# 3. Chạy — tự cài plugin, DM greeting cho owner khi session lên
-#    (pairing mode: không có ai để greet, bỏ qua):
+# 3. Chạy — tự cài plugin, greet owner qua DM và mọi channel đã cấu
+#    hình khi session lên (không có gì cấu hình: bỏ qua):
 dcbot start business-bot               # tmux session dcbot-business-bot
 dcbot attach business-bot              # vào session claude
 ```
@@ -137,6 +137,7 @@ Sau khi move, **đừng** chạy `claude --channels …` thủ công nữa — t
 | `dcbot deny / allow / remove / policy` | Quản `access.json` của bot ở cwd (hoặc theo tên) |
 | `dcbot group add/rm <channelId>` | Opt-in guild channel (`--no-mention`, `--allow ids`) |
 | `dcbot set <key> <value>` | `ackReaction`, `replyToMode`, `textChunkLimit`, `chunkMode`, `mentionPatterns` |
+| `dcbot dm <text> [--to id]` | DM user trong allowlist qua Discord API — không cần tin nhắn inbound |
 | `dcbot register <dir> / forget / prune` | Quản lý registry & dọn drift |
 | `dcbot config set lang <en\|vi\|ja>` | Đổi ngôn ngữ UI |
 | `dcbot completions <shell>` | Shell completions |

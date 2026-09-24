@@ -125,6 +125,16 @@ enum Commands {
         value: String,
         name: Option<String>,
     },
+    /// DM an allowlisted user via the Discord API (default: first allowFrom entry)
+    Dm {
+        /// Message text
+        text: String,
+        /// Bot name (default: resolve from cwd)
+        name: Option<String>,
+        /// Recipient user snowflake — must be in the allowlist
+        #[arg(long)]
+        to: Option<String>,
+    },
     /// CLI configuration
     Config {
         #[command(subcommand)]
@@ -245,6 +255,7 @@ fn main() -> Result<()> {
             }
         },
         Commands::Set { key, value, name } => cmds::access::set(&key, &value, name.as_deref()),
+        Commands::Dm { text, name, to } => cmds::dm::send(&text, to.as_deref(), name.as_deref()),
         Commands::Config { action } => match action {
             ConfigAction::Set { key, value } => {
                 if key == "lang" {

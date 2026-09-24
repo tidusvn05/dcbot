@@ -39,7 +39,15 @@ lifecycle:
   greeting_text: "dcbot `%{name}` がオンライン — tmux セッション `%{session}`, dir `%{dir}`"
   greeted: "%{owner} に greeting を送信しました"
   greet_failed: "owner への greeting DM を送信できません: %{err}"
+  greeted_channel: "channel %{channel} に greeting を送信しました"
+  greet_channel_failed: "channel %{channel} へ greeting を送信できません: %{err}"
   not_running: "ボット '%{name}' は実行されていません — 先に `dcbot start %{name}`。"
+
+dm:
+  sent: "%{user} に DM を送信しました（'%{bot}' 経由）"
+  no_recipient: "DM 送信先がありません — allowlist が空です（先に `dcbot allow <snowflake>`、または --to を指定）"
+  not_allowed: "'%{id}' は '%{bot}' の allowlist にありません — DM を拒否します（`dcbot allow %{id}` で追加）"
+  no_token: "bot トークンがありません — .discord-state/.env に DISCORD_BOT_TOKEN がありません"
 
 list:
   col_name: "名前"

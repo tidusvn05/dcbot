@@ -39,7 +39,15 @@ lifecycle:
   greeting_text: "dcbot `%{name}` đã online — tmux `%{session}`, dir `%{dir}`"
   greeted: "đã gửi greeting cho %{owner} trên Discord"
   greet_failed: "không gửi được greeting cho owner: %{err}"
+  greeted_channel: "đã gửi greeting tới channel %{channel} trên Discord"
+  greet_channel_failed: "không gửi được greeting tới channel %{channel}: %{err}"
   not_running: "bot '%{name}' không chạy — `dcbot start %{name}` trước."
+
+dm:
+  sent: "đã gửi DM tới %{user} qua '%{bot}'"
+  no_recipient: "không có ai để DM — allowlist rỗng (`dcbot allow <snowflake>` trước, hoặc truyền --to)"
+  not_allowed: "'%{id}' không nằm trong allowlist của '%{bot}' — từ chối DM (thêm bằng `dcbot allow %{id}`)"
+  no_token: "không có bot token — .discord-state/.env thiếu DISCORD_BOT_TOKEN"
 
 list:
   col_name: "TÊN"
