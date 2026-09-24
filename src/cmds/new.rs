@@ -64,9 +64,10 @@ the plugin's built-in skills.
   transcript text never reaches Discord. If the tool's schema isn't loaded
   yet, call `ToolSearch` with `select:mcp__plugin_discord_discord__reply`
   first, then call it.
-- `.claude/settings.json` pre-allows the discord plugin tools plus read-only
-  shell/git/dcbot commands — run them freely. Anything mutating (rm, git
-  write, interpreters, network) prompts the owner, relayed to their DMs.
+- `.claude/settings.json` pre-allows the discord plugin tools, the standard
+  toolset (Edit/Write/WebFetch/Agent/…), and read-only shell/git/dcbot
+  commands — run them freely. Unusual shell commands (rm, interpreters,
+  network) prompt the owner, relayed to their DMs.
 - Don't hand-edit `.discord-state/` — use the CLI so validation and the
   `approved/` marker stay correct.
 - Session lifecycle (`dcbot start|stop|restart|logs|attach`) belongs to the
@@ -97,18 +98,57 @@ const DISCORD_TOOL_ALLOW: &[&str] = &[
     "mcp__plugin_discord_discord__download_attachment",
 ];
 
-/// Conservative baseline so a fresh deployment is useful without an operator
-/// babysitting prompts: read-only inspection, text processing, git reads,
+/// Baseline so a fresh deployment works like a normal session without an
+/// operator babysitting prompts: the standard toolset (edit/write/web/agent/
+/// task tools), read-only shell inspection, text processing, git reads,
 /// light file ops, and read-only dcbot subcommands.
 ///
-/// Deliberately excluded — anything that runs arbitrary code or mutates
-/// beyond trivial file ops still prompts (the plugin relays that prompt to
-/// the owner's DMs): interpreters (python/node/bun/sh), `find` (-exec/-delete
-/// = arbitrary exec), `xargs`, `sed`/`awk`/`tee` (write files), `rm`, network
-/// tools, env/printenv (secret leakage), git write ops, and access-mutating
-/// dcbot subcommands (allow/remove/policy/approve — a channel message must
-/// never be able to change who can reach the bot).
+/// Deliberately excluded — unusual shell commands still prompt (the plugin
+/// relays that prompt to the owner's DMs): interpreters (python/node/bun/sh),
+/// `find` (-exec/-delete = arbitrary exec), `xargs`, `sed`/`awk`/`tee` (write
+/// files), `rm`, network tools, env/printenv (secret leakage), git write ops,
+/// and access-mutating dcbot subcommands (allow/remove/policy/approve — a
+/// channel message must never be able to change who can reach the bot).
 const BASE_TOOL_ALLOW: &[&str] = &[
+    // Standard toolset — the everyday tools an interactive session uses
+    "Agent",
+    "Artifact",
+    "AskUserQuestion",
+    "BashOutput",
+    "CronCreate",
+    "CronDelete",
+    "CronList",
+    "DesignSync",
+    "Edit",
+    "EnterPlanMode",
+    "EnterWorktree",
+    "ExitPlanMode",
+    "ExitWorktree",
+    "KillShell",
+    "ListAgents",
+    "ListMcpResourcesTool",
+    "Monitor",
+    "NotebookEdit",
+    "PushNotification",
+    "ReadMcpResourceDirTool",
+    "ReadMcpResourceTool",
+    "RemoteTrigger",
+    "ReportFindings",
+    "ScheduleWakeup",
+    "SendFeedback",
+    "SendMessage",
+    "Skill",
+    "TaskCreate",
+    "TaskGet",
+    "TaskList",
+    "TaskOutput",
+    "TaskStop",
+    "TaskUpdate",
+    "TodoWrite",
+    "WebFetch",
+    "WebSearch",
+    "Workflow",
+    "Write",
     // Read-only inspection
     "Bash(ls:*)",
     "Bash(cat:*)",
