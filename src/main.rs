@@ -120,9 +120,16 @@ enum Commands {
     },
     /// Print shell completions
     Completions { shell: Shell },
-    /// Print the agent usage contract (AGENT.md)
-    #[command(name = "agent.md", visible_alias = "agent-md", alias = "agent")]
-    AgentMd,
+    /// Print the agent usage contract (AGENTS.md)
+    #[command(
+        name = "agents.md",
+        visible_alias = "agents-md",
+        alias = "agents",
+        alias = "agent.md",
+        alias = "agent-md",
+        alias = "agent"
+    )]
+    AgentsMd,
 }
 
 #[derive(Subcommand)]
@@ -240,8 +247,8 @@ fn main() -> Result<()> {
             clap_complete::generate(shell, &mut cmd, "dcbot", &mut std::io::stdout());
             Ok(())
         }
-        Commands::AgentMd => {
-            print!("{}", include_str!("../AGENT.md"));
+        Commands::AgentsMd => {
+            print!("{}", include_str!("../AGENTS.md"));
             Ok(())
         }
     }

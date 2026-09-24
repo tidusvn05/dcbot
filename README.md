@@ -88,12 +88,12 @@ After the move, do **not** launch `claude --channels …` manually anymore — w
 
 ## For AI agents
 
-dcbot ships its own usage contract — `dcbot agent.md` prints it (also
-shipped as [`AGENT.md`](AGENT.md)). Point your agent at it, then ask in
+dcbot ships its own usage contract — `dcbot agents.md` prints it (also
+shipped as [`AGENTS.md`](AGENTS.md)). Point your agent at it, then ask in
 natural language:
 
 ```text
-read `dcbot agent.md`
+read `dcbot agents.md`
 
 which bots are running right now?
 create a new discord bot called business-bot, token is ...

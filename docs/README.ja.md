@@ -84,12 +84,12 @@ dcbot start mybot
 
 ## AI エージェントとの利用
 
-dcbot は usage contract を同梱しています — `dcbot agent.md` で出力
-(リポジトリの [`AGENT.md`](../AGENT.md) と同一)。エージェントに読ませて
+dcbot は usage contract を同梱しています — `dcbot agents.md` で出力
+(リポジトリの [`AGENTS.md`](../AGENTS.md) と同一)。エージェントに読ませて
 から、やりたいことを伝えるだけです:
 
 ```text
-read `dcbot agent.md`
+read `dcbot agents.md`
 
 今動いているボットは?
 business-bot という名前で新しいボットを作って、トークンは ...

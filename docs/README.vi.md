@@ -84,11 +84,11 @@ Sau khi move, **đừng** chạy `claude --channels …` thủ công nữa — t
 
 ## Dùng với AI agent
 
-dcbot tự ship usage contract — `dcbot agent.md` in nó ra (cũng nằm ở
-[`AGENT.md`](../AGENT.md)). Chỉ cần trỏ agent tới nó rồi mô tả yêu cầu:
+dcbot tự ship usage contract — `dcbot agents.md` in nó ra (cũng nằm ở
+[`AGENTS.md`](../AGENTS.md)). Chỉ cần trỏ agent tới nó rồi mô tả yêu cầu:
 
 ```text
-read `dcbot agent.md`
+read `dcbot agents.md`
 
 bot nào đang chạy?
 tạo bot mới tên business-bot, token là ...
