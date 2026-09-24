@@ -96,14 +96,13 @@ natural language:
 read `dcbot agent.md`
 
 which bots are running right now?
+create a new discord bot called business-bot, token is ...
+migrate my existing global discord bot into dcbot, name it legacy-bot
+approve pairing code a4f91c for business-bot
+doctor the deployment in this directory
 ```
 
-Example asks:
-
-- "create a new discord bot called business-bot, token is ..."
-- "migrate my existing global discord bot into dcbot, name it legacy-bot"
-- "approve pairing code a4f91c for business-bot"
-- "doctor the deployment in this directory"
+Keep the first line, then ask anything — any language works.
 
 ## Commands
 
