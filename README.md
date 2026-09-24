@@ -94,7 +94,8 @@ dcbot new business-bot                 # creates ./business-bot/
 dcbot new business-bot --dir ~/bots/x  # or a specific path
 dcbot new business-bot --here          # or deploy into the current dir
 
-# 3. Run it:
+# 3. Run it — auto-installs the plugin, DMs the owner once the
+#    session is up (pairing mode: nobody to greet, skipped):
 dcbot start business-bot               # tmux session dcbot-business-bot
 dcbot attach business-bot              # jump into the claude session
 ```

@@ -36,6 +36,9 @@ lifecycle:
   attach_hint: "アタッチ: dcbot attach %{name}"
   stopped: "'%{name}' を停止しました"
   trust_failed: "~/.claude.json でデプロイ dir を事前信頼できませんでした (%{err}) — 初回起動時にフォルダ信頼プロンプトが出ることがあります"
+  greeting_text: "dcbot `%{name}` がオンライン — tmux セッション `%{session}`, dir `%{dir}`"
+  greeted: "%{owner} に greeting を送信しました"
+  greet_failed: "owner への greeting DM を送信できません: %{err}"
   not_running: "ボット '%{name}' は実行されていません — 先に `dcbot start %{name}`。"
 
 list:

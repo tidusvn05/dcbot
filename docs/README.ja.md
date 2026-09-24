@@ -90,7 +90,8 @@ dcbot new business-bot                 # ./business-bot/ を作成
 dcbot new business-bot --dir ~/bots/x  # または任意のパス
 dcbot new business-bot --here          # またはカレント dir にデプロイ
 
-# 3. 起動:
+# 3. 起動 — プラグインを自動インストールし、セッションが立ち上がると
+#    owner に greeting を DM (pairing モード: 送信先なし、スキップ):
 dcbot start business-bot               # tmux セッション dcbot-business-bot
 dcbot attach business-bot              # claude セッションにアタッチ
 ```

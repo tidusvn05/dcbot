@@ -45,6 +45,9 @@ nearest `.discord-state` upward.
   deployment dir (`projects[dir].hasTrustDialogAccepted` in
   `~/.claude.json`) — otherwise the first tmux launch hangs on a prompt
   nobody can answer.
+- `dcbot start` DMs the first `allowFrom` entry in access.json once the
+  session is up ("<name> is online") — skipped in pairing mode (nobody
+  to greet); a failed DM only warns, the session stays up.
 
 ## Token handling
 

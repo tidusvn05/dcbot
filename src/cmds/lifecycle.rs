@@ -7,8 +7,9 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 
 use crate::cmds::new::RUN_SH;
-use crate::resolve::resolve;
+use crate::resolve::{resolve, Resolved};
 use crate::tmux;
+use crate::{discord, state};
 
 pub fn start(name: &str, respawn: bool) -> Result<()> {
     if !tmux::installed() {
@@ -63,7 +64,48 @@ pub fn start(name: &str, respawn: bool) -> Result<()> {
         "  {}",
         t!("lifecycle.attach_hint", name = bot.name.as_str())
     );
+    // Sanity window — if the session died instantly (bad run.sh, missing
+    // bun) don't DM a false "online" greeting.
+    std::thread::sleep(std::time::Duration::from_secs(2));
+    if tmux::exists(&session) {
+        greet(&bot);
+    }
     Ok(())
+}
+
+/// DM the first allowlisted user that the bot is up — proves the token
+/// works end-to-end and gives the owner a channel to reply in. Skipped
+/// in pairing mode (nobody to greet). Best-effort: the session is already
+/// running, failures only warn.
+fn greet(bot: &Resolved) {
+    let Ok(access) = state::load(&bot.state_dir) else {
+        return;
+    };
+    let Some(owner) = access.allow_from.first() else {
+        return;
+    };
+    let Some(token) = state::read_token(&bot.state_dir) else {
+        return;
+    };
+    let session = tmux::session_name(&bot.name);
+    let text = t!(
+        "lifecycle.greeting_text",
+        name = bot.name.as_str(),
+        session = session.as_str(),
+        dir = bot.dir.display().to_string().as_str()
+    );
+    match discord::open_dm(&token, owner).and_then(|ch| discord::send_message(&token, &ch, &text)) {
+        Ok(()) => println!(
+            "{} {}",
+            style("✓").green().bold(),
+            t!("lifecycle.greeted", owner = owner.as_str())
+        ),
+        Err(e) => eprintln!(
+            "{} {}",
+            style(t!("common.warn")).yellow().bold(),
+            t!("lifecycle.greet_failed", err = e.to_string())
+        ),
+    }
 }
 
 /// Pre-accept Claude Code's workspace-trust dialog for the deployment dir

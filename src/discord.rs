@@ -78,6 +78,51 @@ impl AppInfo {
     }
 }
 
+/// POST helper — same host rule as the GETs (api.discord.com, or the
+/// DCBOT_API_BASE stub).
+fn post(token: &str, path: &str, body: &serde_json::Value) -> Result<serde_json::Value> {
+    let res = ureq::post(format!("{}{path}", api_base()))
+        .header("Authorization", &format!("Bot {token}"))
+        .header("Content-Type", "application/json")
+        .send(body.to_string());
+    match res {
+        Ok(mut r) => {
+            let raw = r
+                .body_mut()
+                .read_to_string()
+                .context("reading Discord response")?;
+            serde_json::from_str(&raw).context("unexpected response from Discord")
+        }
+        Err(ureq::Error::StatusCode(401)) => bail!("invalid bot token (401 Unauthorized)"),
+        Err(ureq::Error::StatusCode(c)) => bail!("Discord API error: HTTP {c}"),
+        Err(e) => bail!("could not reach Discord API: {e}"),
+    }
+}
+
+/// POST /users/@me/channels — open (or fetch) the DM channel with a user.
+/// Returns the channel id for send_message.
+pub fn open_dm(token: &str, user_id: &str) -> Result<String> {
+    let v = post(
+        token,
+        "/users/@me/channels",
+        &serde_json::json!({"recipient_id": user_id}),
+    )?;
+    v.get("id")
+        .and_then(|i| i.as_str())
+        .map(|s| s.to_string())
+        .context("Discord response missing channel id")
+}
+
+/// POST /channels/{id}/messages.
+pub fn send_message(token: &str, channel_id: &str, content: &str) -> Result<()> {
+    post(
+        token,
+        &format!("/channels/{channel_id}/messages"),
+        &serde_json::json!({"content": content}),
+    )?;
+    Ok(())
+}
+
 /// GET /applications/@me with the bot token — the client_id for the invite
 /// URL plus the intent flags.
 pub fn fetch_application(token: &str) -> Result<AppInfo> {

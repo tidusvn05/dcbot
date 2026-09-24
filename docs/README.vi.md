@@ -89,7 +89,8 @@ dcbot new business-bot                 # tạo ./business-bot/
 dcbot new business-bot --dir ~/bots/x  # hoặc path chỉ định
 dcbot new business-bot --here          # hoặc deploy ngay tại cwd
 
-# 3. Chạy:
+# 3. Chạy — tự cài plugin, DM greeting cho owner khi session lên
+#    (pairing mode: không có ai để greet, bỏ qua):
 dcbot start business-bot               # tmux session dcbot-business-bot
 dcbot attach business-bot              # vào session claude
 ```

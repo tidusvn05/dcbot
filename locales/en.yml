@@ -36,6 +36,9 @@ lifecycle:
   attach_hint: "attach with: dcbot attach %{name}"
   stopped: "stopped '%{name}'"
   trust_failed: "couldn't pre-trust the deployment dir in ~/.claude.json (%{err}) — the first launch may show the folder-trust prompt"
+  greeting_text: "dcbot `%{name}` is online — tmux `%{session}`, dir `%{dir}`"
+  greeted: "greeted %{owner} on Discord"
+  greet_failed: "couldn't DM the greeting to the owner: %{err}"
   not_running: "bot '%{name}' is not running — `dcbot start %{name}` first."
 
 list:
