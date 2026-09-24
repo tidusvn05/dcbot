@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Bug Fixes
 
+- Keep target filename so sha256sum -c can verify
+
+### Documentation
+
+- Update for v0.1.0
+- Add fresh-setup and migration guides; register generates run.sh
+- Fold example asks into the copyable agent block
+- Split agent examples into per-case copyable blocks
+- Move agent-first guide to top of Guides
+
+### Features
+
+- Non-interactive mode for agent-driven onboarding
+- `dcbot agent.md` prints the agent usage contract
+
+### Release
+
+- V0.2.0
+
+### Rename
+
+- Dcbot agents.md as canonical (agent.md kept as alias), AGENTS.md file
+
+### Bug Fixes
+
 - Executable bit on install.sh, changelog job pushes HEAD:main
 - Macos-13 runner retired — use macos-15-intel for x86_64 builds
 
