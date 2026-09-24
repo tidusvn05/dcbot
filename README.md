@@ -138,7 +138,7 @@ After the move, do **not** launch `claude --channels …` manually anymore — w
 | `dcbot logs <name> [-f]` | Tail the session pane |
 | `dcbot list` | Registry ⨝ tmux — running/stopped/missing, duplicate-token & orphan warnings |
 | `dcbot status [name]` | Token live-check, gateway line, allowlist/pending counts |
-| `dcbot invite [name]` | Re-print the OAuth2 invite URL (add the bot to another server) |
+| `dcbot invite [name] [--open\|--copy]` | Re-print the OAuth2 invite URL; `--open` launches a browser, `--copy` uses the clipboard |
 | `dcbot doctor [target]` | `.env` perms, token validity, access.json, tools on PATH, plugin presence, run.sh, duplicate tokens |
 | `dcbot approve <code>` | Approve pairing → `allowFrom` + writes `approved/<senderId>` marker |
 | `dcbot deny / allow / remove / policy` | Manage `access.json` for the bot in cwd (or named) |

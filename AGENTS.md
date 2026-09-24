@@ -17,7 +17,8 @@ dcbot register <dir>     adopt an existing deployment (has bot.toml or
                          .discord-state); generates run.sh if missing
 dcbot list / status [name] / doctor [name|dir]
 dcbot invite [name]     re-print the OAuth2 invite URL (add the bot
-                        to another server)
+                        to another server); --open launches a browser,
+                        --copy puts it on the clipboard
 dcbot start|stop|restart <name> [--respawn] / attach <name> / logs <name> [-f]
 dcbot approve|deny <pairing-code>  codes live in .discord-state/access.json
 dcbot allow|remove <snowflake> / policy <pairing|allowlist|disabled>
@@ -38,6 +39,10 @@ nearest `.discord-state` upward.
   every DM twice.
 - Prereqs: `claude` + discord plugin (`/plugin install
   discord@claude-plugins-official`), `bun`, `tmux` on PATH.
+- `dcbot start` pre-accepts Claude Code's folder-trust dialog for the
+  deployment dir (`projects[dir].hasTrustDialogAccepted` in
+  `~/.claude.json`) — otherwise the first tmux launch hangs on a prompt
+  nobody can answer.
 
 ## Token handling
 

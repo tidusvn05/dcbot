@@ -132,7 +132,7 @@ Sau khi move, **đừng** chạy `claude --channels …` thủ công nữa — t
 | `dcbot logs <name> [-f]` | Xem output session |
 | `dcbot list` | Registry ⨝ tmux — running/stopped/missing, cảnh báo trùng token & session mồ côi |
 | `dcbot status [name]` | Check token live, gateway, số allowlist/pending |
-| `dcbot invite [name]` | In lại OAuth2 invite URL (add bot vào server khác) |
+| `dcbot invite [name] [--open\|--copy]` | In lại OAuth2 invite URL; `--open` mở browser, `--copy` copy clipboard |
 | `dcbot doctor [target]` | Kiểm tra `.env` perms, token, access.json, tools, plugin, run.sh, trùng token |
 | `dcbot approve <code>` | Duyệt pairing → `allowFrom` + ghi marker `approved/<senderId>` |
 | `dcbot deny / allow / remove / policy` | Quản `access.json` của bot ở cwd (hoặc theo tên) |

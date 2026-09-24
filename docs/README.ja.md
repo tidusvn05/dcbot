@@ -134,7 +134,7 @@ dcbot start mybot
 | `dcbot logs <name> [-f]` | セッション出力を表示 |
 | `dcbot list` | registry ⨝ tmux — running/stopped/missing、トークン重複・孤立セッション警告 |
 | `dcbot status [name]` | トークン live 検証、ゲートウェイ、allowlist/pending 数 |
-| `dcbot invite [name]` | OAuth2 招待 URL を再表示 (ボットを別サーバーに追加) |
+| `dcbot invite [name] [--open\|--copy]` | OAuth2 招待 URL を再表示; `--open` でブラウザ起動、`--copy` でクリップボードへ |
 | `dcbot doctor [target]` | `.env` 権限、トークン、access.json、ツール、プラグイン、run.sh、トークン重複を検査 |
 | `dcbot approve <code>` | ペアリング承認 → `allowFrom` + `approved/<senderId>` マーカー書込 |
 | `dcbot deny / allow / remove / policy` | cwd (または名前指定) のボットの `access.json` を管理 |
