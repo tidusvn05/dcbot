@@ -59,7 +59,7 @@ create a new discord bot called business-bot, token is ...
 ```text
 follow cli `dcbot agent`
 
-migrate my existing global discord bot into dcbot, name it legacy-bot
+migrate my existing discord bot into dcbot — path is ~/existing-bot
 ```
 
 ```text
@@ -105,27 +105,27 @@ DM your bot — with your snowflake seeded it just works. If you left it empty (
 
 ### Migrating an existing global bot
 
-If your bot already runs with the global state dir (`~/.claude/channels/discord/`), move it under dcbot — the inner layout is identical, so it's a single `mv`:
+If your bot already runs with the global state dir (`~/.claude/channels/discord/`), bring it under dcbot — the inner layout is identical, so it's one copy into the dir where the bot lives (create one first if it doesn't exist yet):
 
 ```bash
 # 1. Stop every claude session using the global channel. One token must
 #    not run in two processes — every DM would be delivered twice.
 
-# 2. Move the state dir into a deployment dir (.env, access.json,
-#    approved/, inbox/ — allowlist, groups and pending pairings all kept):
-mkdir -p ~/bots/mybot
-mv ~/.claude/channels/discord ~/bots/mybot/.discord-state
+# 2. Copy the state dir into the bot's dir as .discord-state (.env,
+#    access.json, approved/, inbox/ — allowlist, groups and pending
+#    pairings all kept; -a preserves the 0600 token perms):
+cp -a ~/.claude/channels/discord ~/existing-bot/.discord-state
 
 # 3. Adopt it — validates the existing token, writes bot.toml + run.sh,
-#    registers the bot:
-dcbot register ~/bots/mybot
-cd ~/bots/mybot && dcbot doctor   # verify the deployment is healthy
+#    registers the bot under the dir's name (existing-bot here):
+dcbot register ~/existing-bot
+cd ~/existing-bot && dcbot doctor   # verify the deployment is healthy
 
 # 4. From now on, start the bot only through dcbot:
-dcbot start mybot
+dcbot start existing-bot
 ```
 
-After the move, do **not** launch `claude --channels …` manually anymore — without `DISCORD_STATE_DIR` the server falls back to the now-empty global dir and exits on a missing token. If you copied (rather than moved) the state dir, delete `~/.claude/channels/discord` once the migrated bot is verified healthy, so no stray session can resurrect the duplicate-token problem.
+Do **not** launch `claude --channels …` manually anymore — without `DISCORD_STATE_DIR` the server falls back to the global dir. And since you copied rather than moved: once the migrated bot is verified healthy, delete `~/.claude/channels/discord` so no stray session can resurrect the duplicate-token problem.
 
 ## Commands
 

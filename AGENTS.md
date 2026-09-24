@@ -88,9 +88,13 @@ re-prints the URL later.
 ## Migrating a global bot
 
 ```
-mv ~/.claude/channels/discord <dir>/.discord-state
+cp -a ~/.claude/channels/discord <dir>/.discord-state
 dcbot register <dir> && cd <dir> && dcbot doctor && dcbot start <name>
 ```
 
-Stop every claude session using the global channel first; delete the
-old global dir after the migrated bot is verified healthy.
+`<dir>` is the bot's existing working dir (create it if needed) —
+`register` takes no name; the bot is named after the dir (or its
+`bot.toml`). Copy, don't move: `cp -a` preserves the `.env` 0600 perms
+and leaves the original as rollback. Stop every claude session using
+the global channel first; delete the old global dir after the migrated
+bot is verified healthy.

@@ -54,7 +54,7 @@ tạo bot mới tên business-bot, token là ...
 ```text
 follow cli `dcbot agent`
 
-migrate bot cũ ở ~/.claude/channels/discord sang dcbot, đặt tên legacy-bot
+migrate bot discord cũ của tôi sang dcbot — path là ~/existing-bot
 ```
 
 ```text
@@ -99,27 +99,27 @@ DM bot — nếu đã seed snowflake thì dùng được ngay. Nếu để trố
 
 ### Migrate từ bot global có sẵn
 
-Nếu bot đang chạy với state dir global (`~/.claude/channels/discord/`), chuyển sang dcbot — layout bên trong giống hệt nên chỉ cần một `mv`:
+Nếu bot đang chạy với state dir global (`~/.claude/channels/discord/`), đưa nó về dcbot — layout bên trong giống hệt nên chỉ cần copy vào đúng thư mục bot hiện có (chưa có thì tạo mới):
 
 ```bash
 # 1. Dừng mọi session claude đang dùng global channel. Một token không
 #    được chạy ở 2 process — mọi DM sẽ bị deliver trùng.
 
-# 2. Move cả state dir vào deployment dir (.env, access.json,
-#    approved/, inbox/ — giữ nguyên allowlist, groups, pending):
-mkdir -p ~/bots/mybot
-mv ~/.claude/channels/discord ~/bots/mybot/.discord-state
+# 2. Copy state dir vào thư mục của bot dưới tên .discord-state (.env,
+#    access.json, approved/, inbox/ — giữ nguyên allowlist, groups,
+#    pending; -a giữ perms 0600 của token):
+cp -a ~/.claude/channels/discord ~/existing-bot/.discord-state
 
 # 3. Nhận nuôi — validate token hiện có, ghi bot.toml + run.sh,
-#    đăng ký registry:
-dcbot register ~/bots/mybot
-cd ~/bots/mybot && dcbot doctor   # kiểm tra deployment ổn
+#    đăng ký registry dưới tên của dir (ở đây là existing-bot):
+dcbot register ~/existing-bot
+cd ~/existing-bot && dcbot doctor   # kiểm tra deployment ổn
 
 # 4. Từ nay chỉ start bot qua dcbot:
-dcbot start mybot
+dcbot start existing-bot
 ```
 
-Sau khi move, **đừng** chạy `claude --channels …` thủ công nữa — thiếu `DISCORD_STATE_DIR` thì server rơi về global dir (giờ trống) và exit vì thiếu token. Nếu bạn đã copy (thay vì move) state dir, xóa `~/.claude/channels/discord` sau khi bot mới chạy ổn, tránh session lạc làm sống lại vấn đề trùng token.
+**Đừng** chạy `claude --channels …` thủ công nữa — thiếu `DISCORD_STATE_DIR` thì server rơi về global dir. Và vì bạn đã copy (không move): sau khi bot mới chạy ổn, xóa `~/.claude/channels/discord` để không session lạc nào làm sống lại vấn đề trùng token.
 
 ## Commands
 

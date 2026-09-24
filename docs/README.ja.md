@@ -55,7 +55,7 @@ business-bot という名前で新しいボットを作って、トークンは 
 ```text
 follow cli `dcbot agent`
 
-~/.claude/channels/discord の既存ボットを legacy-bot として dcbot に移行して
+既存の discord ボットを dcbot に移行して — path は ~/existing-bot
 ```
 
 ```text
@@ -101,27 +101,27 @@ dcbot attach business-bot              # claude セッションにアタッチ
 
 ### 既存のグローバルボットからの移行
 
-グローバル state dir (`~/.claude/channels/discord/`) で動いているボットを dcbot 配下へ移します — 内部レイアウトは同一なので `mv` 一発です:
+グローバル state dir (`~/.claude/channels/discord/`) で動いているボットを dcbot 配下へ — 内部レイアウトは同一なので、ボットの既存 dir へコピーするだけです (無ければ作成):
 
 ```bash
 # 1. グローバル channel を使う claude セッションを全て停止。同一
 #    トークンを 2 プロセスで動かすと全 DM が二重配送されます。
 
-# 2. state dir をデプロイ dir へ丸ごと移動 (.env, access.json,
-#    approved/, inbox/ — allowlist, groups, pending すべて保持):
-mkdir -p ~/bots/mybot
-mv ~/.claude/channels/discord ~/bots/mybot/.discord-state
+# 2. state dir をボットの dir に .discord-state としてコピー
+#    (.env, access.json, approved/, inbox/ — allowlist, groups,
+#    pending すべて保持。-a でトークンの 0600 パーミッションも維持):
+cp -a ~/.claude/channels/discord ~/existing-bot/.discord-state
 
 # 3. 引き取り — 既存トークンを検証、bot.toml + run.sh を生成、
-#    registry に登録:
-dcbot register ~/bots/mybot
-cd ~/bots/mybot && dcbot doctor   # デプロイが健全か確認
+#    dir 名 (ここでは existing-bot) で registry に登録:
+dcbot register ~/existing-bot
+cd ~/existing-bot && dcbot doctor   # デプロイが健全か確認
 
 # 4. 以後は dcbot 経由でのみ起動:
-dcbot start mybot
+dcbot start existing-bot
 ```
 
-移行後は `claude --channels …` を手動で起動しないでください — `DISCORD_STATE_DIR` が無いとサーバーは (空になった) グローバル dir にフォールバックし、トークン不在で exit します。state dir を move ではなくコピーした場合は、移行先が健全と確認でき次第 `~/.claude/channels/discord` を削除し、迷子セッションによるトークン重複問題の再発を防いでください。
+`claude --channels …` を手動で起動しないでください — `DISCORD_STATE_DIR` が無いとサーバーはグローバル dir にフォールバックします。コピー (move ではなく) したので、移行先が健全と確認でき次第 `~/.claude/channels/discord` を削除し、迷子セッションによるトークン重複の再発を防いでください。
 
 ## コマンド
 
