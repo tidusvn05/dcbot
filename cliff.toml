@@ -30,6 +30,10 @@ footer = ""
 conventional_commits = true
 filter_unconventional = true
 commit_parsers = [
+    # skips first — parsers match in order
+    { message = "^chore\\(release\\): prepare for", skip = true },
+    { message = "^docs\\(changelog\\)", skip = true },
+    { message = "^release:", skip = true },
     { message = "^feat", group = "Features" },
     { message = "^fix", group = "Bug Fixes" },
     { message = "^doc", group = "Documentation" },
@@ -37,9 +41,6 @@ commit_parsers = [
     { message = "^refactor", group = "Refactoring" },
     { message = "^style", group = "Styling" },
     { message = "^test", group = "Testing" },
-    { message = "^chore\\(release\\): prepare for", skip = true },
-    { message = "^docs\\(changelog\\)", skip = true },
-    { message = "^release:", skip = true },
     { message = "^chore", group = "Miscellaneous" },
     { body = ".*security", group = "Security" },
 ]

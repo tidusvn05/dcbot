@@ -11,13 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
-- Update for v0.2.0
 - Token-handling rules for agents + privacy warning on token-in-prompt
 - Token-shy flow follows plugin convention — .env in state dir, then register
 
 ### Features
 
 - --yes on a TTY prompts for the token only
+
 ## [0.2.0] - 2026-09-24
 ### Bug Fixes
 
@@ -25,7 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
-- Update for v0.1.0
 - Add fresh-setup and migration guides; register generates run.sh
 - Fold example asks into the copyable agent block
 - Split agent examples into per-case copyable blocks
