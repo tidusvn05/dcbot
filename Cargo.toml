@@ -5,7 +5,7 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Onboard and manage Discord-channel bots for Claude Code — per-directory state, tmux lifecycle, access control."
 repository = "https://github.com/your-org/dcbot"
-keywords = ["discord", "claude", "cli", "bots"]
+keywords = ["discord", "claude", "cli", "bot", "mcp"]
 categories = ["command-line-utilities"]
 
 [dependencies]
