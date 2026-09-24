@@ -43,7 +43,7 @@ jobs:
           tar -czf "dist/${{ matrix.name }}.tar.gz" -C dist dcbot
           rm dist/dcbot
           cd dist && sha256sum "${{ matrix.name }}.tar.gz" > "${{ matrix.name }}.tar.gz.sha256"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist-${{ matrix.name }}
           path: dist/*
