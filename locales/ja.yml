@@ -1,0 +1,112 @@
+_version: 1
+common:
+  warn: "警告"
+  done: "完了。"
+
+new:
+  prereq_missing: "PATH にツールがありません: %{tools} — `dcbot start` 前にインストールしてください。"
+  dir_exists: "%{dir} には既に .discord-state があります — そこで `dcbot doctor` を実行するか別のディレクトリを選んでください。"
+  name_taken: "ボット名 '%{name}' は既に登録されています — `dcbot list` で確認してください。"
+  guide: |
+    続行する前に Discord Developer Portal (https://discord.com/developers/applications) で:
+      1. New Application → 名前を付ける
+      2. Bot → Reset Token → トークンをコピー (一度だけ表示)
+      3. Bot → Privileged Gateway Intents → "Message Content Intent" を有効化
+      4. OAuth2 → URL Generator → scope `bot` → 権限:
+         View Channels, Send Messages, Send Messages in Threads,
+         Read Message History, Attach Files, Add Reactions
+      5. 生成された URL を開き、参加しているサーバーにボットを追加
+         (DM 可能にするために必須)
+  guide_ready: "続行する"
+  token_prompt: "Discord ボットトークンを貼り付け"
+  token_ok: "トークン有効 — ボット: %{tag} (%{id})"
+  owner_prompt: "あなたの Discord ユーザー ID (snowflake) (空 = pairing モードのまま)"
+  owner_invalid: "'%{id}' は Discord snowflake ではありません (17-20 桁の数字)"
+  created: "デプロイを作成しました: %{dir}"
+  start_now: "今すぐボットセッションを起動しますか (tmux)?"
+  start_hint: "後で: `dcbot start %{name}`"
+
+lifecycle:
+  tmux_missing: "tmux がインストールされていません — `apt install tmux` などで導入してください。"
+  already_running: "ボット '%{name}' は実行中です — `dcbot attach %{name}` または `dcbot stop %{name}`。"
+  started: "'%{name}' を tmux セッション %{session} で起動しました"
+  attach_hint: "アタッチ: dcbot attach %{name}"
+  stopped: "'%{name}' を停止しました"
+  not_running: "ボット '%{name}' は実行されていません — 先に `dcbot start %{name}`。"
+
+list:
+  col_name: "名前"
+  col_status: "状態"
+  col_bot: "ボット"
+  col_dir: "ディレクトリ"
+  st_running: "実行中"
+  st_stopped: "停止"
+  st_missing: "dir 不明"
+  empty: "登録されたボットはありません — `dcbot new <name>` で作成。"
+  warn_missing_dir: "エントリ '%{name}' は削除済みのディレクトリを指しています — `dcbot prune` で整理。"
+  warn_dup_token: "ボット '%{a}' と '%{b}' が同じ Discord トークンを共有 — 両セッションが全 DM を受信します (重複返信)。"
+  warn_orphan: "tmux セッション '%{session}' は registry に未登録 — 孤立。手動でアタッチまたは kill してください。"
+
+status:
+  bot: "ボット:"
+  dir: "ディレクトリ:"
+  identity: "identity:"
+  created: "作成:"
+  no_manifest: "bot.toml がありません — `dcbot register` または `dcbot doctor`"
+  token_ok: "トークン: 有効 →"
+  token_bad: "トークン: 無効 →"
+  token_missing: "トークン: 未設定 (.env または DISCORD_BOT_TOKEN)"
+  access: "access:"
+  allow: "allowlist"
+  pending: "pending"
+  groups: "groups"
+  session: "セッション:"
+  gateway: "ゲートウェイ:"
+
+access:
+  approved: "ペアリング承認 — %{sender} を '%{bot}' の allowlist に追加"
+  approved_hint: "チャネルサーバーが次のポーリング (~5秒) で \"Paired!\" 確認を送信します"
+  denied: "コード %{code} を拒否 (sender %{sender} には通知なし)"
+  allowed: "%{id} を '%{bot}' の allowlist に追加"
+  already_allowed: "%{id} は既に allowlist にあります"
+  removed: "%{id} を '%{bot}' の allowlist から削除"
+  not_in_list: "%{id} は allowlist にありません"
+  policy_set: "'%{bot}' の dmPolicy → %{mode}"
+  pairing_warn: "注意: 'pairing' は未知の送信者にコードを返します — 必要な人が揃ったら 'allowlist' に切替を。"
+  group_added: "guild チャンネル %{id} を '%{bot}' で有効化"
+  group_removed: "guild チャンネル %{id} を無効化"
+  group_not_found: "guild チャンネル %{id} は有効化されていません"
+  set_ok: "'%{bot}' の %{key} を更新"
+
+doctor:
+  title: "dcbot doctor —"
+  state_dir: ".discord-state あり"
+  env_exists: ".env ファイルあり"
+  env_missing: "ファイルが見つかりません"
+  env_perms: ".env パーミッションは 600"
+  token_valid: "トークンは Discord で有効"
+  manifest_match: "bot.toml が live トークンと一致"
+  access_parses: "access.json をパース可能"
+  policy_pairing: "dmPolicy がまだ 'pairing'"
+  tool: "検出"
+  plugin: "~/.claude に discord プラグインあり"
+  plugin_hint: "claude 内でインストール: /plugin install discord@claude-plugins-official"
+  run_sh: "run.sh 正常"
+  run_sh_bad: "run.sh に DISCORD_STATE_DIR または --channels がありません — `dcbot new` で再生成するか手動修正"
+  run_sh_missing: "run.sh がありません — `dcbot start` で再生成されます"
+  dup_token: "別の登録ボットが同じトークンを使用"
+  session: "tmux セッション"
+
+reg:
+  no_state: "%{dir} に .discord-state がありません — 登録対象なし"
+  registered: "'%{name}' を登録しました"
+  not_found: "'%{name}' というボットはありません"
+  forgotten: "'%{name}' を解除しました (デプロイ dir はそのまま)"
+  pruned: "古いエントリ '%{name}' を削除"
+  nothing_stale: "古い registry エントリはありません。"
+
+config:
+  bad_lang: "未対応の言語 — 選択肢: %{langs}"
+  lang_set: "言語を %{lang} に設定"
+  file: "config:"
+  effective: "有効なロケール: %{lang}"

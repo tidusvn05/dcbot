@@ -1,0 +1,34 @@
+[package]
+name = "dcbot"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Onboard and manage Discord-channel bots for Claude Code — per-directory state, tmux lifecycle, access control."
+repository = "https://github.com/your-org/dcbot"
+keywords = ["discord", "claude", "cli", "bots"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+anyhow = "1"
+chrono = "0.4"
+clap = { version = "4", features = ["derive", "cargo"] }
+clap_complete = "4"
+comfy-table = "7"
+console = "0.15"
+dialoguer = "0.11"
+dirs = "5"
+regex = "1"
+rust-i18n = "3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+ureq = "3"
+which = "6"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1

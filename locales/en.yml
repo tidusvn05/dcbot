@@ -1,0 +1,112 @@
+_version: 1
+common:
+  warn: "warning"
+  done: "Done."
+
+new:
+  prereq_missing: "missing tools on PATH: %{tools} — install them before `dcbot start`."
+  dir_exists: "%{dir} already contains .discord-state — run `dcbot doctor` there or pick another dir."
+  name_taken: "bot name '%{name}' is already registered — `dcbot list` to see all."
+  guide: |
+    Before continuing, in the Discord Developer Portal (https://discord.com/developers/applications):
+      1. New Application → give it a name
+      2. Bot → Reset Token → copy the token (shown once)
+      3. Bot → Privileged Gateway Intents → enable "Message Content Intent"
+      4. OAuth2 → URL Generator → scope `bot` → permissions:
+         View Channels, Send Messages, Send Messages in Threads,
+         Read Message History, Attach Files, Add Reactions
+      5. Open the generated URL and add the bot to a server you're in
+         (required so the bot can DM you)
+  guide_ready: "Ready to continue"
+  token_prompt: "Paste the Discord bot token"
+  token_ok: "token valid — bot identity: %{tag} (%{id})"
+  owner_prompt: "Your Discord user ID snowflake (empty = keep pairing mode)"
+  owner_invalid: "'%{id}' is not a numeric Discord snowflake (17-20 digits)"
+  created: "deployment created at %{dir}"
+  start_now: "Start the bot session now (tmux)?"
+  start_hint: "Later: `dcbot start %{name}`"
+
+lifecycle:
+  tmux_missing: "tmux is not installed — `apt install tmux` (or your distro's equivalent)."
+  already_running: "bot '%{name}' is already running — `dcbot attach %{name}` or `dcbot stop %{name}`."
+  started: "started '%{name}' in tmux session %{session}"
+  attach_hint: "attach with: dcbot attach %{name}"
+  stopped: "stopped '%{name}'"
+  not_running: "bot '%{name}' is not running — `dcbot start %{name}` first."
+
+list:
+  col_name: "NAME"
+  col_status: "STATUS"
+  col_bot: "BOT"
+  col_dir: "DIR"
+  st_running: "running"
+  st_stopped: "stopped"
+  st_missing: "missing dir"
+  empty: "No bots registered — `dcbot new <name>` to create one."
+  warn_missing_dir: "registry entry '%{name}' points to a deleted dir — `dcbot prune` to clean."
+  warn_dup_token: "bots '%{a}' and '%{b}' share the same Discord token — both sessions will receive every DM (duplicate replies)."
+  warn_orphan: "tmux session '%{session}' has no registry entry — orphaned; attach manually or kill it."
+
+status:
+  bot: "Bot:"
+  dir: "dir:"
+  identity: "identity:"
+  created: "created:"
+  no_manifest: "no bot.toml — run `dcbot register` or `dcbot doctor`"
+  token_ok: "token: valid →"
+  token_bad: "token: INVALID →"
+  token_missing: "token: missing (.env or DISCORD_BOT_TOKEN)"
+  access: "access:"
+  allow: "allowlist"
+  pending: "pending"
+  groups: "groups"
+  session: "session:"
+  gateway: "gateway:"
+
+access:
+  approved: "pairing approved — %{sender} added to '%{bot}' allowlist"
+  approved_hint: "the channel server sends the \"Paired!\" confirmation on its next poll (~5s)"
+  denied: "pairing code %{code} denied (sender %{sender} not notified)"
+  allowed: "%{id} added to '%{bot}' allowlist"
+  already_allowed: "%{id} is already in the allowlist"
+  removed: "%{id} removed from '%{bot}' allowlist"
+  not_in_list: "%{id} is not in the allowlist"
+  policy_set: "dmPolicy for '%{bot}' → %{mode}"
+  pairing_warn: "note: 'pairing' replies to unknown senders with a code — switch to 'allowlist' once everyone who needs access is in."
+  group_added: "guild channel %{id} enabled for '%{bot}'"
+  group_removed: "guild channel %{id} disabled"
+  group_not_found: "guild channel %{id} was not enabled"
+  set_ok: "%{key} updated for '%{bot}'"
+
+doctor:
+  title: "dcbot doctor —"
+  state_dir: ".discord-state present"
+  env_exists: ".env file exists"
+  env_missing: "file not found"
+  env_perms: ".env permissions are 600"
+  token_valid: "token validates against Discord"
+  manifest_match: "bot.toml matches live token identity"
+  access_parses: "access.json parses"
+  policy_pairing: "dmPolicy still 'pairing'"
+  tool: "found"
+  plugin: "discord plugin found under ~/.claude"
+  plugin_hint: "install inside claude: /plugin install discord@claude-plugins-official"
+  run_sh: "run.sh is valid"
+  run_sh_bad: "run.sh exists but lacks DISCORD_STATE_DIR or --channels — regenerate via `dcbot new` or fix by hand"
+  run_sh_missing: "run.sh missing — `dcbot start` will regenerate it"
+  dup_token: "another registered bot uses the same token"
+  session: "tmux session"
+
+reg:
+  no_state: "%{dir} has no .discord-state — nothing to register"
+  registered: "registered '%{name}'"
+  not_found: "no registered bot named '%{name}'"
+  forgotten: "forgot '%{name}' (deployment dir untouched)"
+  pruned: "pruned stale entry '%{name}'"
+  nothing_stale: "No stale registry entries."
+
+config:
+  bad_lang: "unsupported language — expected one of: %{langs}"
+  lang_set: "language set to %{lang}"
+  file: "config:"
+  effective: "effective locale: %{lang}"

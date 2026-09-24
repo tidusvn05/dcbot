@@ -1,0 +1,112 @@
+_version: 1
+common:
+  warn: "cảnh báo"
+  done: "Xong."
+
+new:
+  prereq_missing: "thiếu tools trên PATH: %{tools} — cài trước khi `dcbot start`."
+  dir_exists: "%{dir} đã chứa .discord-state — chạy `dcbot doctor` tại đó hoặc chọn thư mục khác."
+  name_taken: "tên bot '%{name}' đã được đăng ký — `dcbot list` để xem tất cả."
+  guide: |
+    Trước khi tiếp tục, vào Discord Developer Portal (https://discord.com/developers/applications):
+      1. New Application → đặt tên
+      2. Bot → Reset Token → copy token (chỉ hiện một lần)
+      3. Bot → Privileged Gateway Intents → bật "Message Content Intent"
+      4. OAuth2 → URL Generator → scope `bot` → permissions:
+         View Channels, Send Messages, Send Messages in Threads,
+         Read Message History, Attach Files, Add Reactions
+      5. Mở URL vừa tạo và add bot vào một server bạn đang ở
+         (bắt buộc để bot DM được với bạn)
+  guide_ready: "Sẵn sàng tiếp tục"
+  token_prompt: "Dán Discord bot token"
+  token_ok: "token hợp lệ — bot identity: %{tag} (%{id})"
+  owner_prompt: "Discord user ID snowflake của bạn (để trống = giữ pairing mode)"
+  owner_invalid: "'%{id}' không phải Discord snowflake (17-20 chữ số)"
+  created: "đã tạo deployment tại %{dir}"
+  start_now: "Khởi động session bot ngay (tmux)?"
+  start_hint: "Sau này: `dcbot start %{name}`"
+
+lifecycle:
+  tmux_missing: "chưa cài tmux — `apt install tmux` (hoặc package manager tương đương)."
+  already_running: "bot '%{name}' đang chạy — `dcbot attach %{name}` hoặc `dcbot stop %{name}`."
+  started: "đã khởi động '%{name}' trong tmux session %{session}"
+  attach_hint: "attach bằng: dcbot attach %{name}"
+  stopped: "đã dừng '%{name}'"
+  not_running: "bot '%{name}' không chạy — `dcbot start %{name}` trước."
+
+list:
+  col_name: "TÊN"
+  col_status: "TRẠNG THÁI"
+  col_bot: "BOT"
+  col_dir: "THƯ MỤC"
+  st_running: "đang chạy"
+  st_stopped: "đã dừng"
+  st_missing: "mất thư mục"
+  empty: "Chưa có bot nào — `dcbot new <name>` để tạo."
+  warn_missing_dir: "entry '%{name}' trỏ tới thư mục đã xóa — `dcbot prune` để dọn."
+  warn_dup_token: "bot '%{a}' và '%{b}' dùng chung một Discord token — cả hai session sẽ nhận mọi DM (reply trùng)."
+  warn_orphan: "tmux session '%{session}' không có trong registry — mồ côi; attach tay hoặc kill."
+
+status:
+  bot: "Bot:"
+  dir: "thư mục:"
+  identity: "identity:"
+  created: "tạo lúc:"
+  no_manifest: "không có bot.toml — chạy `dcbot register` hoặc `dcbot doctor`"
+  token_ok: "token: hợp lệ →"
+  token_bad: "token: KHÔNG HỢP LỆ →"
+  token_missing: "token: thiếu (.env hoặc DISCORD_BOT_TOKEN)"
+  access: "access:"
+  allow: "allowlist"
+  pending: "pending"
+  groups: "groups"
+  session: "session:"
+  gateway: "gateway:"
+
+access:
+  approved: "đã duyệt pairing — %{sender} vào allowlist của '%{bot}'"
+  approved_hint: "channel server gửi xác nhận \"Paired!\" ở lần poll kế (~5s)"
+  denied: "đã từ chối code %{code} (sender %{sender} không được thông báo)"
+  allowed: "đã thêm %{id} vào allowlist của '%{bot}'"
+  already_allowed: "%{id} đã có trong allowlist"
+  removed: "đã xóa %{id} khỏi allowlist của '%{bot}'"
+  not_in_list: "%{id} không có trong allowlist"
+  policy_set: "dmPolicy của '%{bot}' → %{mode}"
+  pairing_warn: "lưu ý: 'pairing' trả code cho người lạ — chuyển sang 'allowlist' khi đã đủ người cần dùng."
+  group_added: "đã bật guild channel %{id} cho '%{bot}'"
+  group_removed: "đã tắt guild channel %{id}"
+  group_not_found: "guild channel %{id} chưa được bật"
+  set_ok: "đã cập nhật %{key} cho '%{bot}'"
+
+doctor:
+  title: "dcbot doctor —"
+  state_dir: "có .discord-state"
+  env_exists: "file .env tồn tại"
+  env_missing: "không tìm thấy file"
+  env_perms: "quyền .env là 600"
+  token_valid: "token hợp lệ với Discord"
+  manifest_match: "bot.toml khớp với token identity"
+  access_parses: "access.json parse được"
+  policy_pairing: "dmPolicy vẫn là 'pairing'"
+  tool: "tìm thấy"
+  plugin: "tìm thấy discord plugin trong ~/.claude"
+  plugin_hint: "cài trong claude: /plugin install discord@claude-plugins-official"
+  run_sh: "run.sh hợp lệ"
+  run_sh_bad: "run.sh thiếu DISCORD_STATE_DIR hoặc --channels — tạo lại bằng `dcbot new` hoặc sửa tay"
+  run_sh_missing: "thiếu run.sh — `dcbot start` sẽ tự tạo lại"
+  dup_token: "một bot khác trong registry dùng cùng token"
+  session: "tmux session"
+
+reg:
+  no_state: "%{dir} không có .discord-state — không có gì để register"
+  registered: "đã đăng ký '%{name}'"
+  not_found: "không có bot nào tên '%{name}'"
+  forgotten: "đã forget '%{name}' (thư mục deployment giữ nguyên)"
+  pruned: "đã prune entry cũ '%{name}'"
+  nothing_stale: "Không có entry nào stale."
+
+config:
+  bad_lang: "ngôn ngữ không hỗ trợ — một trong: %{langs}"
+  lang_set: "đã đặt ngôn ngữ %{lang}"
+  file: "config:"
+  effective: "locale hiệu lực: %{lang}"
