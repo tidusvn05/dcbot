@@ -20,7 +20,8 @@ new:
   invite_url: |
     ボットをサーバーに追加 — この招待 URL を開いてください:
       %{url}
-    (ボットが DM を送るために必須 — `dcbot invite %{name}` で再表示)
+    (ボットが DM を送るために必須 — `dcbot invite %{name} --open` で再表示)
+  open_invite: "招待 URL をブラウザで開きますか？"
   intent_missing: "Message Content Intent がオフです — Bot → Privileged Gateway Intents で有効化してください。無効だとボットはメッセージ本文を読めません。"
   owner_prompt: "あなたの Discord ユーザー ID (snowflake) (空 = pairing モードのまま)"
   owner_invalid: "'%{id}' は Discord snowflake ではありません (17-20 桁の数字)"
@@ -34,6 +35,7 @@ lifecycle:
   started: "'%{name}' を tmux セッション %{session} で起動しました"
   attach_hint: "アタッチ: dcbot attach %{name}"
   stopped: "'%{name}' を停止しました"
+  trust_failed: "~/.claude.json でデプロイ dir を事前信頼できませんでした (%{err}) — 初回起動時にフォルダ信頼プロンプトが出ることがあります"
   not_running: "ボット '%{name}' は実行されていません — 先に `dcbot start %{name}`。"
 
 list:
@@ -103,6 +105,9 @@ doctor:
 
 invite:
   no_id: "'%{name}' の client_id を特定できません — bot.toml も registry エントリもありません。先に `dcbot register <dir>` を実行してください。"
+  opened: "ブラウザで開きました"
+  copied: "クリップボードにコピーしました"
+  no_open: "ブラウザを開けませんでした (%{err}) — 上の URL をコピーしてください"
 
 reg:
   no_state: "%{dir} に .discord-state がありません — 登録対象なし"

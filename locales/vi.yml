@@ -20,7 +20,8 @@ new:
   invite_url: |
     Add bot vào một server — mở invite URL này:
       %{url}
-    (bắt buộc để bot DM được với bạn — `dcbot invite %{name}` in lại URL)
+    (bắt buộc để bot DM được với bạn — `dcbot invite %{name} --open` mở lại)
+  open_invite: "Mở invite URL trong browser ngay?"
   intent_missing: "Message Content Intent đang TẮT — bật tại Bot → Privileged Gateway Intents, nếu không bot không đọc được nội dung tin nhắn."
   owner_prompt: "Discord user ID snowflake của bạn (để trống = giữ pairing mode)"
   owner_invalid: "'%{id}' không phải Discord snowflake (17-20 chữ số)"
@@ -34,6 +35,7 @@ lifecycle:
   started: "đã khởi động '%{name}' trong tmux session %{session}"
   attach_hint: "attach bằng: dcbot attach %{name}"
   stopped: "đã dừng '%{name}'"
+  trust_failed: "không pre-trust được deployment dir trong ~/.claude.json (%{err}) — lần chạy đầu có thể hiện prompt trust folder"
   not_running: "bot '%{name}' không chạy — `dcbot start %{name}` trước."
 
 list:
@@ -103,6 +105,9 @@ doctor:
 
 invite:
   no_id: "không xác định được client_id của '%{name}' — không có bot.toml và không có trong registry; chạy `dcbot register <dir>` trước."
+  opened: "đã mở trong browser"
+  copied: "đã copy vào clipboard"
+  no_open: "không mở được browser (%{err}) — copy URL ở trên"
 
 reg:
   no_state: "%{dir} không có .discord-state — không có gì để register"

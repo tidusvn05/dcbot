@@ -12,6 +12,7 @@ use crate::discord;
 use crate::manifest::{self, Manifest};
 use crate::registry::{Entry, Registry};
 use crate::state::{self, Access};
+use crate::util;
 
 pub struct NewOpts {
     pub name: String,
@@ -110,11 +111,12 @@ pub fn run(opts: NewOpts) -> Result<()> {
         .as_ref()
         .map(|a| a.id.as_str())
         .unwrap_or(bot.id.as_str());
+    let url = discord::invite_url(client_id);
     println!(
         "{}",
         t!(
             "new.invite_url",
-            url = discord::invite_url(client_id),
+            url = url.as_str(),
             name = opts.name.as_str()
         )
     );
@@ -124,6 +126,20 @@ pub fn run(opts: NewOpts) -> Result<()> {
             style(t!("common.warn")).yellow().bold(),
             t!("new.intent_missing")
         );
+    }
+    if !noninteractive
+        && Confirm::with_theme(&theme)
+            .with_prompt(t!("new.open_invite").to_string())
+            .default(true)
+            .interact()?
+    {
+        if let Err(e) = util::open_browser(&url) {
+            eprintln!(
+                "{} {}",
+                style(t!("common.warn")).yellow().bold(),
+                t!("invite.no_open", err = e.to_string())
+            );
+        }
     }
 
     // Owner snowflake — empty keeps pairing mode.

@@ -20,7 +20,8 @@ new:
   invite_url: |
     Add the bot to a server — open this invite URL:
       %{url}
-    (required so the bot can DM you — `dcbot invite %{name}` re-prints it)
+    (required so the bot can DM you — `dcbot invite %{name} --open` re-opens it)
+  open_invite: "Open the invite URL in your browser now?"
   intent_missing: "Message Content Intent is OFF — enable it under Bot → Privileged Gateway Intents, or the bot can't read message text."
   owner_prompt: "Your Discord user ID snowflake (empty = keep pairing mode)"
   owner_invalid: "'%{id}' is not a numeric Discord snowflake (17-20 digits)"
@@ -34,6 +35,7 @@ lifecycle:
   started: "started '%{name}' in tmux session %{session}"
   attach_hint: "attach with: dcbot attach %{name}"
   stopped: "stopped '%{name}'"
+  trust_failed: "couldn't pre-trust the deployment dir in ~/.claude.json (%{err}) — the first launch may show the folder-trust prompt"
   not_running: "bot '%{name}' is not running — `dcbot start %{name}` first."
 
 list:
@@ -103,6 +105,9 @@ doctor:
 
 invite:
   no_id: "can't determine client_id for '%{name}' — no bot.toml and not in registry; run `dcbot register <dir>` first."
+  opened: "opened in browser"
+  copied: "copied to clipboard"
+  no_open: "couldn't open a browser (%{err}) — copy the URL above"
 
 reg:
   no_state: "%{dir} has no .discord-state — nothing to register"

@@ -6,6 +6,7 @@ mod registry;
 mod resolve;
 mod state;
 mod tmux;
+mod util;
 
 use anyhow::Result;
 use clap::{CommandFactory, Parser, Subcommand};
@@ -66,7 +67,15 @@ enum Commands {
     /// Detailed status of one bot (default: bot in current dir)
     Status { name: Option<String> },
     /// Print the bot's OAuth2 invite URL (add it to another server)
-    Invite { name: Option<String> },
+    Invite {
+        name: Option<String>,
+        /// Also open the URL in the system browser
+        #[arg(long)]
+        open: bool,
+        /// Also copy the URL to the clipboard
+        #[arg(long)]
+        copy: bool,
+    },
     /// Start the bot's claude session in tmux
     Start {
         name: String,
@@ -202,7 +211,7 @@ fn main() -> Result<()> {
         Commands::Prune => cmds::registry_cmds::prune(),
         Commands::List => cmds::list::list(),
         Commands::Status { name } => cmds::list::status(name.as_deref()),
-        Commands::Invite { name } => cmds::invite::run(name.as_deref()),
+        Commands::Invite { name, open, copy } => cmds::invite::run(name.as_deref(), open, copy),
         Commands::Start { name, respawn } => cmds::lifecycle::start(&name, respawn),
         Commands::Stop { name } => cmds::lifecycle::stop(&name),
         Commands::Restart { name, respawn } => cmds::lifecycle::restart(&name, respawn),
