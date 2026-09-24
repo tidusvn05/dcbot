@@ -38,13 +38,13 @@ shipped as [`AGENTS.md`](AGENTS.md)). Point your agent at it, then ask in
 natural language:
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 which bots are running right now?
 ```
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 create a new discord bot called business-bot, token is ...
 ```
@@ -57,19 +57,19 @@ create a new discord bot called business-bot, token is ...
 > input), then the agent can take over with `dcbot` commands.
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 migrate my existing global discord bot into dcbot, name it legacy-bot
 ```
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 approve pairing code a4f91c for business-bot
 ```
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 doctor the deployment in this directory
 ```

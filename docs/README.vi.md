@@ -33,13 +33,13 @@ dcbot tự ship usage contract — `dcbot agents.md` in nó ra (cũng nằm ở
 [`AGENTS.md`](../AGENTS.md)). Chỉ cần trỏ agent tới nó rồi mô tả yêu cầu:
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 bot nào đang chạy?
 ```
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 tạo bot mới tên business-bot, token là ...
 ```
@@ -52,19 +52,19 @@ tạo bot mới tên business-bot, token là ...
 > khiển tiếp bằng các lệnh `dcbot` khác.
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 migrate bot cũ ở ~/.claude/channels/discord sang dcbot, đặt tên legacy-bot
 ```
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 approve pairing code a4f91c cho business-bot
 ```
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 check sức khỏe deployment ở dir này
 ```

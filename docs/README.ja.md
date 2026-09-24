@@ -34,13 +34,13 @@ dcbot は usage contract を同梱しています — `dcbot agents.md` で出�
 から、やりたいことを伝えるだけです:
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 今動いているボットは?
 ```
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 business-bot という名前で新しいボットを作って、トークンは ...
 ```
@@ -53,19 +53,19 @@ business-bot という名前で新しいボットを作って、トークンは 
 > 聞かれ、あとはエージェントが `dcbot` コマンドで引き継ぎます。
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 ~/.claude/channels/discord の既存ボットを legacy-bot として dcbot に移行して
 ```
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 business-bot で pairing code a4f91c を承認して
 ```
 
 ```text
-read `dcbot agents.md`
+follow cli `dcbot agents.md`
 
 このディレクトリのデプロイを doctor して
 ```
