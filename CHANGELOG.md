@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.9.0] - 2026-09-24
+### Documentation
+
+- Migrate by copying global state into the existing bot dir
+
+### Features
+
+- Auto-allow the standard toolset in new deployments
+- Allow unrestricted Bash in generated deployments
 ## [0.8.0] - 2026-09-24
 ### Bug Fixes
 
