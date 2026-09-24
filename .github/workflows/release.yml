@@ -23,7 +23,7 @@ jobs:
           - { name: dcbot-macos-x86_64,  os: macos-15-intel, target: x86_64-apple-darwin }
           - { name: dcbot-macos-aarch64, os: macos-latest,  target: aarch64-apple-darwin }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -43,7 +43,7 @@ jobs:
           tar -czf "dist/${{ matrix.name }}.tar.gz" -C dist dcbot
           rm dist/dcbot
           cd dist && sha256sum "${{ matrix.name }}.tar.gz" > "${{ matrix.name }}.tar.gz.sha256"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist-${{ matrix.name }}
           path: dist/*
@@ -53,19 +53,19 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: taiki-e/install-action@git-cliff
       - name: Generate release notes
         run: git-cliff --latest --strip header -o RELEASE_NOTES.md
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: dist-*
           path: dist
           merge-multiple: true
       - name: Publish release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           body_path: RELEASE_NOTES.md
           files: dist/*
@@ -75,7 +75,7 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: taiki-e/install-action@git-cliff
