@@ -19,7 +19,7 @@ new:
          (bắt buộc để bot DM được với bạn)
   guide_ready: "Sẵn sàng tiếp tục"
   token_prompt: "Dán Discord bot token"
-  token_required: "chế độ non-interactive cần --token <TOKEN> hoặc env DCBOT_BOT_TOKEN"
+  token_required: "non-interactive cần --token <TOKEN> (hoặc chạy `dcbot new <name> --yes` trong terminal để được hỏi trực tiếp)"
   token_ok: "token hợp lệ — bot identity: %{tag} (%{id})"
   owner_prompt: "Discord user ID snowflake của bạn (để trống = giữ pairing mode)"
   owner_invalid: "'%{id}' không phải Discord snowflake (17-20 chữ số)"

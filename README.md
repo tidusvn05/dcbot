@@ -56,9 +56,9 @@ create a new discord bot called business-bot, token is ...
 > **Token in a prompt** transits your agent's model provider once. dcbot
 > itself only sends it to `api.discord.com` (validation) and writes it to
 > `.discord-state/.env` mode `0600` — nothing else on the public internet
-> sees it. Rather keep it out of chat? Write
-> `DISCORD_BOT_TOKEN=<token>` to `<dir>/.discord-state/.env` (0600)
-> yourself, then ask "register the deployment at <dir>".
+> sees it. Rather keep it out of chat? Run `dcbot new business-bot
+> --yes` yourself in a terminal — it asks only for the token (hidden
+> input), then the agent can take over with `dcbot` commands.
 
 ```text
 read `dcbot agents.md`

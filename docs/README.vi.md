@@ -51,9 +51,9 @@ tạo bot mới tên business-bot, token là ...
 > **Token trong prompt** sẽ đi qua model provider của agent đúng 1 lần.
 > dcbot chỉ gửi token tới `api.discord.com` (để validate) rồi ghi vào
 > `.discord-state/.env` mode `0600` — không endpoint public nào khác thấy
-> nó. Muốn token không qua chat? Tự ghi
-> `DISCORD_BOT_TOKEN=<token>` vào `<dir>/.discord-state/.env` (0600),
-> rồi hỏi "register deployment ở <dir>".
+> nó. Muốn token không qua chat? Tự chạy `dcbot new business-bot
+> --yes` trong terminal — nó chỉ hỏi token (nhập ẩn), sau đó agent điều
+> khiển tiếp bằng các lệnh `dcbot` khác.
 
 ```text
 read `dcbot agents.md`

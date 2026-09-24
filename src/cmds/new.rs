@@ -3,6 +3,7 @@ use console::style;
 use dialoguer::{theme::ColorfulTheme, Confirm, Input, Password};
 use rust_i18n::t;
 use std::fs;
+use std::io::IsTerminal;
 use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 
@@ -84,7 +85,9 @@ pub fn run(opts: NewOpts) -> Result<()> {
     let token = match opts.token.or(env_token) {
         Some(tok) => tok.trim().to_string(),
         None => {
-            if noninteractive {
+            // --yes under an agent (no TTY) can't prompt — bail clearly.
+            // In a real terminal, --yes still asks for the token only.
+            if noninteractive && !std::io::stdin().is_terminal() {
                 bail!(t!("new.token_required"));
             }
             Password::with_theme(&theme)

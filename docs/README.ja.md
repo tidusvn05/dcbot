@@ -53,8 +53,8 @@ business-bot という名前で新しいボットを作って、トークンは 
 > 通過します。dcbot 自体は `api.discord.com` (検証) にのみ送信し、
 > `.discord-state/.env` (モード `0600`) に保存します — 他の公開
 > エンドポイントには一切送られません。チャットに出したくない場合は、自分で
-> `DISCORD_BOT_TOKEN=<token>` を `<dir>/.discord-state/.env` (0600) に
-> 書いてから「<dir> のデプロイを register して」と依頼してください。
+> 端末で `dcbot new business-bot --yes` を実行 — トークンだけを (非表示で)
+> 聞かれ、あとはエージェントが `dcbot` コマンドで引き継ぎます。
 
 ```text
 read `dcbot agents.md`

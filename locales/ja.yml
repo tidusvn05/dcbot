@@ -19,7 +19,7 @@ new:
          (DM 可能にするために必須)
   guide_ready: "続行する"
   token_prompt: "Discord ボットトークンを貼り付け"
-  token_required: "非対話モードには --token <TOKEN> または環境変数 DCBOT_BOT_TOKEN が必要です"
+  token_required: "非対話モードには --token <TOKEN> が必要です (端末で `dcbot new <name> --yes` を実行すればプロンプトで入力できます)"
   token_ok: "トークン有効 — ボット: %{tag} (%{id})"
   owner_prompt: "あなたの Discord ユーザー ID (snowflake) (空 = pairing モードのまま)"
   owner_invalid: "'%{id}' は Discord snowflake ではありません (17-20 桁の数字)"
