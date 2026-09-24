@@ -14,7 +14,7 @@ chrono = "0.4"
 clap = { version = "4", features = ["derive", "cargo"] }
 clap_complete = "4"
 comfy-table = "7"
-console = "0.15"
+console = "0.16"
 dialoguer = "0.11"
 dirs = "5"
 regex = "1"
