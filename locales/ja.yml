@@ -12,15 +12,16 @@ new:
       1. New Application → 名前を付ける
       2. Bot → Reset Token → トークンをコピー (一度だけ表示)
       3. Bot → Privileged Gateway Intents → "Message Content Intent" を有効化
-      4. OAuth2 → URL Generator → scope `bot` → 権限:
-         View Channels, Send Messages, Send Messages in Threads,
-         Read Message History, Attach Files, Add Reactions
-      5. 生成された URL を開き、参加しているサーバーにボットを追加
-         (DM 可能にするために必須)
+    以下にトークンを貼り付けてください — 検証後に dcbot が招待 URL を表示します。
   guide_ready: "続行する"
   token_prompt: "Discord ボットトークンを貼り付け"
   token_required: "非対話モードには --token <TOKEN> が必要です (端末で `dcbot new <name> --yes` を実行すればプロンプトで入力できます)"
   token_ok: "トークン有効 — ボット: %{tag} (%{id})"
+  invite_url: |
+    ボットをサーバーに追加 — この招待 URL を開いてください:
+      %{url}
+    (ボットが DM を送るために必須 — `dcbot invite %{name}` で再表示)
+  intent_missing: "Message Content Intent がオフです — Bot → Privileged Gateway Intents で有効化してください。無効だとボットはメッセージ本文を読めません。"
   owner_prompt: "あなたの Discord ユーザー ID (snowflake) (空 = pairing モードのまま)"
   owner_invalid: "'%{id}' は Discord snowflake ではありません (17-20 桁の数字)"
   created: "デプロイを作成しました: %{dir}"
@@ -86,6 +87,8 @@ doctor:
   env_missing: "ファイルが見つかりません"
   env_perms: ".env パーミッションは 600"
   token_valid: "トークンは Discord で有効"
+  intent: "Message Content Intent"
+  intent_off: "オフ — Bot → Privileged Gateway Intents で有効化"
   manifest_match: "bot.toml が live トークンと一致"
   access_parses: "access.json をパース可能"
   policy_pairing: "dmPolicy がまだ 'pairing'"
@@ -97,6 +100,9 @@ doctor:
   run_sh_missing: "run.sh がありません — `dcbot start` で再生成されます"
   dup_token: "別の登録ボットが同じトークンを使用"
   session: "tmux セッション"
+
+invite:
+  no_id: "'%{name}' の client_id を特定できません — bot.toml も registry エントリもありません。先に `dcbot register <dir>` を実行してください。"
 
 reg:
   no_state: "%{dir} に .discord-state がありません — 登録対象なし"

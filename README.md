@@ -88,10 +88,11 @@ Prereqs: `claude` (Claude Code), `tmux`, `bun`, a Discord account.
 curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 
 # 3. Create a deployment. The wizard prints the Developer Portal steps
-#    (New Application → Bot → Reset Token → enable Message Content Intent
-#    → invite URL), validates your token live, seeds access.json with
-#    your Discord snowflake (allowlist mode — no pairing needed), writes
-#    run.sh, and registers the bot:
+#    (New Application → Bot → Reset Token → enable Message Content Intent),
+#    validates your token live, generates the invite URL itself (no
+#    OAuth2 URL Generator needed), seeds access.json with your Discord
+#    snowflake (allowlist mode — no pairing needed), writes run.sh, and
+#    registers the bot:
 dcbot new business-bot                 # creates ./business-bot/
 dcbot new business-bot --dir ~/bots/x  # or a specific path
 dcbot new business-bot --here          # or deploy into the current dir
@@ -137,6 +138,7 @@ After the move, do **not** launch `claude --channels …` manually anymore — w
 | `dcbot logs <name> [-f]` | Tail the session pane |
 | `dcbot list` | Registry ⨝ tmux — running/stopped/missing, duplicate-token & orphan warnings |
 | `dcbot status [name]` | Token live-check, gateway line, allowlist/pending counts |
+| `dcbot invite [name]` | Re-print the OAuth2 invite URL (add the bot to another server) |
 | `dcbot doctor [target]` | `.env` perms, token validity, access.json, tools on PATH, plugin presence, run.sh, duplicate tokens |
 | `dcbot approve <code>` | Approve pairing → `allowFrom` + writes `approved/<senderId>` marker |
 | `dcbot deny / allow / remove / policy` | Manage `access.json` for the bot in cwd (or named) |
@@ -152,7 +154,7 @@ Name arguments are optional inside a deployment dir — dcbot resolves the bot b
 
 ```
 <deployment>/                # anywhere on disk
-  bot.toml                   # manifest (bot id/tag, created, channels flag)
+  bot.toml                   # manifest (bot id/tag, app id, created, channels flag)
   run.sh                     # exported DISCORD_STATE_DIR → exec claude --channels …
   .discord-state/
     .env                     # DISCORD_BOT_TOKEN (600)

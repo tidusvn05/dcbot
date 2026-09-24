@@ -1,6 +1,7 @@
 pub mod access;
 pub mod config_cmd;
 pub mod doctor;
+pub mod invite;
 pub mod lifecycle;
 pub mod list;
 pub mod new;

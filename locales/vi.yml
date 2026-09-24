@@ -12,15 +12,16 @@ new:
       1. New Application → đặt tên
       2. Bot → Reset Token → copy token (chỉ hiện một lần)
       3. Bot → Privileged Gateway Intents → bật "Message Content Intent"
-      4. OAuth2 → URL Generator → scope `bot` → permissions:
-         View Channels, Send Messages, Send Messages in Threads,
-         Read Message History, Attach Files, Add Reactions
-      5. Mở URL vừa tạo và add bot vào một server bạn đang ở
-         (bắt buộc để bot DM được với bạn)
+    Dán token ở dưới — dcbot sẽ in invite URL sau khi validate.
   guide_ready: "Sẵn sàng tiếp tục"
   token_prompt: "Dán Discord bot token"
   token_required: "non-interactive cần --token <TOKEN> (hoặc chạy `dcbot new <name> --yes` trong terminal để được hỏi trực tiếp)"
   token_ok: "token hợp lệ — bot identity: %{tag} (%{id})"
+  invite_url: |
+    Add bot vào một server — mở invite URL này:
+      %{url}
+    (bắt buộc để bot DM được với bạn — `dcbot invite %{name}` in lại URL)
+  intent_missing: "Message Content Intent đang TẮT — bật tại Bot → Privileged Gateway Intents, nếu không bot không đọc được nội dung tin nhắn."
   owner_prompt: "Discord user ID snowflake của bạn (để trống = giữ pairing mode)"
   owner_invalid: "'%{id}' không phải Discord snowflake (17-20 chữ số)"
   created: "đã tạo deployment tại %{dir}"
@@ -86,6 +87,8 @@ doctor:
   env_missing: "không tìm thấy file"
   env_perms: "quyền .env là 600"
   token_valid: "token hợp lệ với Discord"
+  intent: "Message Content Intent"
+  intent_off: "đang TẮT — bật tại Bot → Privileged Gateway Intents"
   manifest_match: "bot.toml khớp với token identity"
   access_parses: "access.json parse được"
   policy_pairing: "dmPolicy vẫn là 'pairing'"
@@ -97,6 +100,9 @@ doctor:
   run_sh_missing: "thiếu run.sh — `dcbot start` sẽ tự tạo lại"
   dup_token: "một bot khác trong registry dùng cùng token"
   session: "tmux session"
+
+invite:
+  no_id: "không xác định được client_id của '%{name}' — không có bot.toml và không có trong registry; chạy `dcbot register <dir>` trước."
 
 reg:
   no_state: "%{dir} không có .discord-state — không có gì để register"

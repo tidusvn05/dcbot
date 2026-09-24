@@ -44,6 +44,7 @@ pub fn register(dir: PathBuf) -> Result<()> {
                 name: name.clone(),
                 bot_user_id: bot_user_id.clone(),
                 bot_tag: bot_tag.clone(),
+                app_id: discord::fetch_application(&token).ok().map(|a| a.id),
                 created_at: created_at.clone(),
                 channels_flag: manifest::default_channels_flag(),
                 autorestart: false,

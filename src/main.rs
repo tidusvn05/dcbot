@@ -65,6 +65,8 @@ enum Commands {
     List,
     /// Detailed status of one bot (default: bot in current dir)
     Status { name: Option<String> },
+    /// Print the bot's OAuth2 invite URL (add it to another server)
+    Invite { name: Option<String> },
     /// Start the bot's claude session in tmux
     Start {
         name: String,
@@ -200,6 +202,7 @@ fn main() -> Result<()> {
         Commands::Prune => cmds::registry_cmds::prune(),
         Commands::List => cmds::list::list(),
         Commands::Status { name } => cmds::list::status(name.as_deref()),
+        Commands::Invite { name } => cmds::invite::run(name.as_deref()),
         Commands::Start { name, respawn } => cmds::lifecycle::start(&name, respawn),
         Commands::Stop { name } => cmds::lifecycle::stop(&name),
         Commands::Restart { name, respawn } => cmds::lifecycle::restart(&name, respawn),

@@ -108,6 +108,23 @@ pub fn run(target: Option<&str>) -> Result<i32> {
         }),
     }
 
+    // 3b. Message Content Intent (skipped when Discord won't say)
+    if let Some(tok) = state::read_token(&bot.state_dir) {
+        if let Ok(app) = discord::fetch_application(&tok) {
+            if let Some(on) = app.message_content_intent() {
+                checks.push(Check {
+                    level: if on { Level::Pass } else { Level::Warn },
+                    label: t!("doctor.intent").to_string(),
+                    detail: if on {
+                        String::new()
+                    } else {
+                        t!("doctor.intent_off").to_string()
+                    },
+                });
+            }
+        }
+    }
+
     // 4. manifest ↔ token identity
     match (&bot.manifest, &bot_user_id) {
         (Some(m), Some(id)) => checks.push(Check {

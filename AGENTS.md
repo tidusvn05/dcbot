@@ -16,6 +16,8 @@ dcbot new <name> --yes [--dir <path>|--here]
 dcbot register <dir>     adopt an existing deployment (has bot.toml or
                          .discord-state); generates run.sh if missing
 dcbot list / status [name] / doctor [name|dir]
+dcbot invite [name]     re-print the OAuth2 invite URL (add the bot
+                        to another server)
 dcbot start|stop|restart <name> [--respawn] / attach <name> / logs <name> [-f]
 dcbot approve|deny <pairing-code>  codes live in .discord-state/access.json
 dcbot allow|remove <snowflake> / policy <pairing|allowlist|disabled>
@@ -40,8 +42,10 @@ nearest `.discord-state` upward.
 ## Token handling
 
 - dcbot sends the token to exactly one place: `api.discord.com`
-  (validation) — then writes it to `.discord-state/.env` mode `0600`.
-  It never touches any other network endpoint.
+  (identity + application metadata) — then writes it to
+  `.discord-state/.env` mode `0600`.
+  It never touches any other network endpoint. (Dev/testing only:
+  `DCBOT_API_BASE` can redirect these calls to a local stub.)
 - A token pasted in chat transits the model provider once. If the user
   prefers not to, have them run this in their own terminal:
 
@@ -55,11 +59,10 @@ nearest `.discord-state` upward.
 ## User has no token yet → print these steps and wait
 
 Discord Developer Portal → New Application → Bot → Reset Token →
-enable Message Content Intent → OAuth2 URL Generator (scope `bot`;
-perms: View Channels, Send Messages, Send Messages in Threads, Read
-Message History, Attach Files, Add Reactions) → invite the bot to a
-shared server → then `dcbot new <name> --yes --token <t> --owner
-<snowflake> --start`.
+enable Message Content Intent → then `dcbot new <name> --yes --token
+<t> --owner <snowflake> --start` — it prints the OAuth2 invite URL;
+open it and add the bot to a shared server. `dcbot invite <name>`
+re-prints the URL later.
 
 ## Migrating a global bot
 

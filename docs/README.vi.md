@@ -83,10 +83,10 @@ Yêu cầu: `claude` (Claude Code), `tmux`, `bun`, tài khoản Discord.
 curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 
 # 3. Tạo deployment. Wizard in sẵn các bước Developer Portal
-#    (New Application → Bot → Reset Token → bật Message Content Intent
-#    → invite URL), validate token trực tiếp, seed access.json với
-#    Discord snowflake của bạn (allowlist mode — không cần pairing),
-#    ghi run.sh, và đăng ký bot:
+#    (New Application → Bot → Reset Token → bật Message Content Intent),
+#    validate token trực tiếp, tự sinh invite URL (không cần OAuth2
+#    URL Generator), seed access.json với Discord snowflake của bạn
+#    (allowlist mode — không cần pairing), ghi run.sh, và đăng ký bot:
 dcbot new business-bot                 # tạo ./business-bot/
 dcbot new business-bot --dir ~/bots/x  # hoặc path chỉ định
 dcbot new business-bot --here          # hoặc deploy ngay tại cwd
@@ -132,6 +132,7 @@ Sau khi move, **đừng** chạy `claude --channels …` thủ công nữa — t
 | `dcbot logs <name> [-f]` | Xem output session |
 | `dcbot list` | Registry ⨝ tmux — running/stopped/missing, cảnh báo trùng token & session mồ côi |
 | `dcbot status [name]` | Check token live, gateway, số allowlist/pending |
+| `dcbot invite [name]` | In lại OAuth2 invite URL (add bot vào server khác) |
 | `dcbot doctor [target]` | Kiểm tra `.env` perms, token, access.json, tools, plugin, run.sh, trùng token |
 | `dcbot approve <code>` | Duyệt pairing → `allowFrom` + ghi marker `approved/<senderId>` |
 | `dcbot deny / allow / remove / policy` | Quản `access.json` của bot ở cwd (hoặc theo tên) |
@@ -147,7 +148,7 @@ Tham số tên có thể bỏ trống khi đứng trong deployment dir — dcbot
 
 ```
 <deployment>/                # bất cứ đâu trên đĩa
-  bot.toml                   # manifest (bot id/tag, created, channels flag)
+  bot.toml                   # manifest (bot id/tag, app id, created, channels flag)
   run.sh                     # export DISCORD_STATE_DIR → exec claude --channels …
   .discord-state/
     .env                     # DISCORD_BOT_TOKEN (600)

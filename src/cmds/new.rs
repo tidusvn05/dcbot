@@ -103,6 +103,29 @@ pub fn run(opts: NewOpts) -> Result<()> {
         t!("new.token_ok", tag = bot.tag(), id = bot.id.as_str())
     );
 
+    // Application metadata → invite URL + Message Content Intent check.
+    // Best-effort: on failure the bot user id doubles as the client_id.
+    let app = discord::fetch_application(&token).ok();
+    let client_id = app
+        .as_ref()
+        .map(|a| a.id.as_str())
+        .unwrap_or(bot.id.as_str());
+    println!(
+        "{}",
+        t!(
+            "new.invite_url",
+            url = discord::invite_url(client_id),
+            name = opts.name.as_str()
+        )
+    );
+    if app.as_ref().and_then(|a| a.message_content_intent()) == Some(false) {
+        eprintln!(
+            "{} {}",
+            style(t!("common.warn")).yellow().bold(),
+            t!("new.intent_missing")
+        );
+    }
+
     // Owner snowflake — empty keeps pairing mode.
     let owner = match opts.owner {
         Some(o) => o.trim().to_string(),
@@ -139,6 +162,7 @@ pub fn run(opts: NewOpts) -> Result<()> {
         name: opts.name.clone(),
         bot_user_id: bot.id.clone(),
         bot_tag: bot.tag(),
+        app_id: Some(client_id.to_string()),
         created_at: chrono::Utc::now().to_rfc3339(),
         channels_flag: manifest::default_channels_flag(),
         autorestart: false,

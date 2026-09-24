@@ -85,9 +85,10 @@ curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | b
 
 # 3. デプロイを作成。ウィザードが Developer Portal の手順を表示
 #    (New Application → Bot → Reset Token → Message Content Intent
-#    有効化 → 招待 URL)、トークンを live 検証し、あなたの Discord
-#    snowflake で access.json をシード (allowlist モード — pairing
-#    不要)、run.sh を生成して registry に登録します:
+#    有効化)、トークンを live 検証し、招待 URL を自動生成 (OAuth2
+#    URL Generator 不要)、あなたの Discord snowflake で access.json
+#    をシード (allowlist モード — pairing 不要)、run.sh を生成して
+#    registry に登録します:
 dcbot new business-bot                 # ./business-bot/ を作成
 dcbot new business-bot --dir ~/bots/x  # または任意のパス
 dcbot new business-bot --here          # またはカレント dir にデプロイ
@@ -133,6 +134,7 @@ dcbot start mybot
 | `dcbot logs <name> [-f]` | セッション出力を表示 |
 | `dcbot list` | registry ⨝ tmux — running/stopped/missing、トークン重複・孤立セッション警告 |
 | `dcbot status [name]` | トークン live 検証、ゲートウェイ、allowlist/pending 数 |
+| `dcbot invite [name]` | OAuth2 招待 URL を再表示 (ボットを別サーバーに追加) |
 | `dcbot doctor [target]` | `.env` 権限、トークン、access.json、ツール、プラグイン、run.sh、トークン重複を検査 |
 | `dcbot approve <code>` | ペアリング承認 → `allowFrom` + `approved/<senderId>` マーカー書込 |
 | `dcbot deny / allow / remove / policy` | cwd (または名前指定) のボットの `access.json` を管理 |
@@ -148,7 +150,7 @@ dcbot start mybot
 
 ```
 <deployment>/                # ディスク上の任意の場所
-  bot.toml                   # マニフェスト (bot id/tag, created, channels flag)
+  bot.toml                   # マニフェスト (bot id/tag, app id, created, channels flag)
   run.sh                     # DISCORD_STATE_DIR export → exec claude --channels …
   .discord-state/
     .env                     # DISCORD_BOT_TOKEN (600)

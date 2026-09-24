@@ -12,15 +12,16 @@ new:
       1. New Application → give it a name
       2. Bot → Reset Token → copy the token (shown once)
       3. Bot → Privileged Gateway Intents → enable "Message Content Intent"
-      4. OAuth2 → URL Generator → scope `bot` → permissions:
-         View Channels, Send Messages, Send Messages in Threads,
-         Read Message History, Attach Files, Add Reactions
-      5. Open the generated URL and add the bot to a server you're in
-         (required so the bot can DM you)
+    Paste the token below — dcbot prints the invite URL after validating it.
   guide_ready: "Ready to continue"
   token_prompt: "Paste the Discord bot token"
   token_required: "non-interactive mode needs --token <TOKEN> (or run `dcbot new <name> --yes` in a terminal to be prompted)"
   token_ok: "token valid — bot identity: %{tag} (%{id})"
+  invite_url: |
+    Add the bot to a server — open this invite URL:
+      %{url}
+    (required so the bot can DM you — `dcbot invite %{name}` re-prints it)
+  intent_missing: "Message Content Intent is OFF — enable it under Bot → Privileged Gateway Intents, or the bot can't read message text."
   owner_prompt: "Your Discord user ID snowflake (empty = keep pairing mode)"
   owner_invalid: "'%{id}' is not a numeric Discord snowflake (17-20 digits)"
   created: "deployment created at %{dir}"
@@ -86,6 +87,8 @@ doctor:
   env_missing: "file not found"
   env_perms: ".env permissions are 600"
   token_valid: "token validates against Discord"
+  intent: "Message Content Intent"
+  intent_off: "OFF — enable under Bot → Privileged Gateway Intents"
   manifest_match: "bot.toml matches live token identity"
   access_parses: "access.json parses"
   policy_pairing: "dmPolicy still 'pairing'"
@@ -97,6 +100,9 @@ doctor:
   run_sh_missing: "run.sh missing — `dcbot start` will regenerate it"
   dup_token: "another registered bot uses the same token"
   session: "tmux session"
+
+invite:
+  no_id: "can't determine client_id for '%{name}' — no bot.toml and not in registry; run `dcbot register <dir>` first."
 
 reg:
   no_state: "%{dir} has no .discord-state — nothing to register"

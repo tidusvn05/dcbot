@@ -3,6 +3,27 @@ use serde::Deserialize;
 
 const API: &str = "https://discord.com/api/v10";
 
+/// Dev/test hook: DCBOT_API_BASE redirects API calls to a local stub.
+/// Unset → the real api.discord.com (the only host the token ever sees).
+fn api_base() -> String {
+    std::env::var("DCBOT_API_BASE").unwrap_or_else(|_| API.to_string())
+}
+
+/// Invite-URL permission bits: ADD_REACTIONS | VIEW_CHANNEL | SEND_MESSAGES
+/// | ATTACH_FILES | READ_MESSAGE_HISTORY | SEND_MESSAGES_IN_THREADS.
+pub const INVITE_PERMISSIONS: u64 =
+    (1 << 6) | (1 << 10) | (1 << 11) | (1 << 15) | (1 << 16) | (1 << 38);
+
+/// application.flags bit for the Message Content gateway intent.
+pub const FLAG_MESSAGE_CONTENT: u64 = 1 << 18;
+
+/// Deterministic OAuth2 invite URL — replaces the portal's URL Generator.
+pub fn invite_url(client_id: &str) -> String {
+    format!(
+        "https://discord.com/oauth2/authorize?client_id={client_id}&scope=bot&permissions={INVITE_PERMISSIONS}"
+    )
+}
+
 #[derive(Debug, Deserialize)]
 pub struct BotUser {
     pub id: String,
@@ -25,7 +46,7 @@ impl BotUser {
 /// GET /users/@me with the bot token — validates the token and returns
 /// the bot identity. 401 = bad token.
 pub fn fetch_me(token: &str) -> Result<BotUser> {
-    let res = ureq::get(format!("{API}/users/@me"))
+    let res = ureq::get(format!("{}/users/@me", api_base()))
         .header("Authorization", &format!("Bot {token}"))
         .call();
     match res {
@@ -35,6 +56,41 @@ pub fn fetch_me(token: &str) -> Result<BotUser> {
                 .read_to_string()
                 .context("reading Discord response")?;
             serde_json::from_str::<BotUser>(&body).context("unexpected response from Discord")
+        }
+        Err(ureq::Error::StatusCode(401)) => bail!("invalid bot token (401 Unauthorized)"),
+        Err(ureq::Error::StatusCode(c)) => bail!("Discord API error: HTTP {c}"),
+        Err(e) => bail!("could not reach Discord API: {e}"),
+    }
+}
+
+/// The bot's application — `id` is the OAuth2 client_id; `flags` carries
+/// the gateway-intent bits (absent on partial responses).
+#[derive(Debug, Deserialize)]
+pub struct AppInfo {
+    pub id: String,
+    pub flags: Option<u64>,
+}
+
+impl AppInfo {
+    /// None = flags field missing, can't tell; Some(false) = intent OFF.
+    pub fn message_content_intent(&self) -> Option<bool> {
+        self.flags.map(|f| f & FLAG_MESSAGE_CONTENT != 0)
+    }
+}
+
+/// GET /applications/@me with the bot token — the client_id for the invite
+/// URL plus the intent flags.
+pub fn fetch_application(token: &str) -> Result<AppInfo> {
+    let res = ureq::get(format!("{}/applications/@me", api_base()))
+        .header("Authorization", &format!("Bot {token}"))
+        .call();
+    match res {
+        Ok(mut r) => {
+            let body = r
+                .body_mut()
+                .read_to_string()
+                .context("reading Discord response")?;
+            serde_json::from_str::<AppInfo>(&body).context("unexpected response from Discord")
         }
         Err(ureq::Error::StatusCode(401)) => bail!("invalid bot token (401 Unauthorized)"),
         Err(ureq::Error::StatusCode(c)) => bail!("Discord API error: HTTP {c}"),

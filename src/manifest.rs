@@ -9,6 +9,10 @@ pub struct Manifest {
     pub name: String,
     pub bot_user_id: String,
     pub bot_tag: String,
+    /// OAuth2 client_id for the invite URL. Equals bot_user_id on standard
+    /// apps — kept as a field so `dcbot invite` stays offline-correct.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub app_id: Option<String>,
     pub created_at: String,
     #[serde(default = "default_channels_flag")]
     pub channels_flag: String,
