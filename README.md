@@ -1,7 +1,7 @@
 # dcbot
 
-[![CI](https://github.com/your-org/dcbot/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/dcbot/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/your-org/dcbot)](https://github.com/your-org/dcbot/releases)
+[![CI](https://github.com/tidusvn05/dcbot/actions/workflows/ci.yml/badge.svg)](https://github.com/tidusvn05/dcbot/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/tidusvn05/dcbot)](https://github.com/tidusvn05/dcbot/releases)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE-MIT)
 
 CLI companion for [`discord@claude-plugins-official`](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/discord) — onboard and operate **multiple Discord-channel bots for Claude Code** on one machine, each with its own `.discord-state` instead of the shared global `~/.claude/channels/discord`.
@@ -13,7 +13,7 @@ Why: the official plugin keeps state in one global directory and its `/discord:a
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/your-org/dcbot/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 ```
 
 Pin a version: `curl -fsSL …/install.sh | DCBOT_VERSION=v0.1.0 bash`

@@ -4,7 +4,7 @@
 # Pin a version: DCBOT_VERSION=v0.2.0 bash install.sh
 set -euo pipefail
 
-REPO="${DCBOT_REPO:-your-org/dcbot}"
+REPO="${DCBOT_REPO:-tidusvn05/dcbot}"
 VERSION="${DCBOT_VERSION:-latest}"
 BIN_DIR="${DCBOT_BIN_DIR:-$HOME/.local/bin}"
 

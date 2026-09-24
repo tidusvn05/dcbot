@@ -9,7 +9,7 @@ Lý do: plugin gốc giữ state ở một thư mục global và skill `/discord
 ## Cài đặt
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/your-org/dcbot/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 ```
 
 Pin version: `curl -fsSL …/install.sh | DCBOT_VERSION=v0.1.0 bash`

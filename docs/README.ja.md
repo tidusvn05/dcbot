@@ -9,7 +9,7 @@
 ## インストール
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/your-org/dcbot/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 ```
 
 バージョン指定: `curl -fsSL …/install.sh | DCBOT_VERSION=v0.1.0 bash`
