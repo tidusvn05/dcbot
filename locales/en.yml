@@ -95,13 +95,20 @@ doctor:
   access_parses: "access.json parses"
   policy_pairing: "dmPolicy still 'pairing'"
   tool: "found"
-  plugin: "discord plugin found under ~/.claude"
-  plugin_hint: "install inside claude: /plugin install discord@claude-plugins-official"
+  plugin: "discord plugin usable for this dir"
+  plugin_hint: "not installed — `dcbot start` auto-installs, or: claude plugin install discord@claude-plugins-official"
+  plugin_disabled: "installed but disabled — `claude plugin enable discord@claude-plugins-official`"
   run_sh: "run.sh is valid"
   run_sh_bad: "run.sh exists but lacks DISCORD_STATE_DIR or --channels — regenerate via `dcbot new` or fix by hand"
   run_sh_missing: "run.sh missing — `dcbot start` will regenerate it"
   dup_token: "another registered bot uses the same token"
   session: "tmux session"
+
+plugin:
+  installing: "discord plugin not installed — running `claude plugin install discord@claude-plugins-official`…"
+  enabling: "discord plugin disabled — running `claude plugin enable discord@claude-plugins-official`…"
+  installed: "discord plugin ready"
+  failed: "couldn't install the discord plugin: %{err} — run `claude plugin install discord@claude-plugins-official` then retry"
 
 invite:
   no_id: "can't determine client_id for '%{name}' — no bot.toml and not in registry; run `dcbot register <dir>` first."

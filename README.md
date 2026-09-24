@@ -16,7 +16,7 @@ Why: the official plugin keeps state in one global directory and its `/discord:a
 curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 ```
 
-**Requirements:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with the discord plugin (`/plugin install discord@claude-plugins-official`), `tmux`, `bun`. Linux & macOS.
+**Requirements:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with the discord plugin (auto-installed by `dcbot`), `tmux`, `bun`. Linux & macOS.
 
 ## Quick start
 
@@ -76,28 +76,25 @@ doctor the deployment in this directory
 
 Any language works — the ask after the first line is yours.
 
-### Fresh setup — from `plugin install` to a running bot
+### Fresh setup — from zero to a running bot
 
 Prereqs: `claude` (Claude Code), `tmux`, `bun`, a Discord account.
 
 ```bash
-# 1. Install the channel plugin — inside any claude session:
-/plugin install discord@claude-plugins-official
-
-# 2. Install dcbot:
+# 1. Install dcbot:
 curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 
-# 3. Create a deployment. The wizard prints the Developer Portal steps
+# 2. Create a deployment. The wizard prints the Developer Portal steps
 #    (New Application → Bot → Reset Token → enable Message Content Intent),
 #    validates your token live, generates the invite URL itself (no
-#    OAuth2 URL Generator needed), seeds access.json with your Discord
-#    snowflake (allowlist mode — no pairing needed), writes run.sh, and
-#    registers the bot:
+#    OAuth2 URL Generator needed), auto-installs the discord channel
+#    plugin, seeds access.json with your Discord snowflake (allowlist
+#    mode — no pairing needed), writes run.sh, and registers the bot:
 dcbot new business-bot                 # creates ./business-bot/
 dcbot new business-bot --dir ~/bots/x  # or a specific path
 dcbot new business-bot --here          # or deploy into the current dir
 
-# 4. Run it:
+# 3. Run it:
 dcbot start business-bot               # tmux session dcbot-business-bot
 dcbot attach business-bot              # jump into the claude session
 ```

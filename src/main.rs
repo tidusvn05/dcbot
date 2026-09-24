@@ -1,3 +1,4 @@
+mod claude;
 mod cmds;
 mod config;
 mod discord;

@@ -37,8 +37,10 @@ nearest `.discord-state` upward.
   `DISCORD_STATE_DIR` the channel server targets the global dir.
 - One token = one process. Two processes on the same token deliver
   every DM twice.
-- Prereqs: `claude` + discord plugin (`/plugin install
-  discord@claude-plugins-official`), `bun`, `tmux` on PATH.
+- Prereqs: `claude` + discord plugin (auto-installed by `dcbot
+  new`/`dcbot start` at user scope; manual:
+  `claude plugin install discord@claude-plugins-official`), `bun`,
+  `tmux` on PATH.
 - `dcbot start` pre-accepts Claude Code's folder-trust dialog for the
   deployment dir (`projects[dir].hasTrustDialogAccepted` in
   `~/.claude.json`) — otherwise the first tmux launch hangs on a prompt

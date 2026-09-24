@@ -12,7 +12,7 @@
 curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 ```
 
-**要件:** Claude Code + discord プラグイン (`/plugin install discord@claude-plugins-official`), `tmux`, `bun`。Linux & macOS。
+**要件:** Claude Code + discord プラグイン (`dcbot` が自動インストール), `tmux`, `bun`。Linux & macOS。
 
 ## クイックスタート
 
@@ -72,28 +72,25 @@ read `dcbot agents.md`
 
 何を聞いても構いません — 1行目以降はあなたの依頼です。
 
-### 新規セットアップ — `plugin install` から起動まで
+### 新規セットアップ — ゼロから起動まで
 
 要件: `claude` (Claude Code), `tmux`, `bun`, Discord アカウント。
 
 ```bash
-# 1. チャネルプラグインをインストール — 任意の claude セッション内で:
-/plugin install discord@claude-plugins-official
-
-# 2. dcbot をインストール:
+# 1. dcbot をインストール:
 curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 
-# 3. デプロイを作成。ウィザードが Developer Portal の手順を表示
+# 2. デプロイを作成。ウィザードが Developer Portal の手順を表示
 #    (New Application → Bot → Reset Token → Message Content Intent
 #    有効化)、トークンを live 検証し、招待 URL を自動生成 (OAuth2
-#    URL Generator 不要)、あなたの Discord snowflake で access.json
-#    をシード (allowlist モード — pairing 不要)、run.sh を生成して
-#    registry に登録します:
+#    URL Generator 不要)、discord チャネルプラグインを自動インストールし、
+#    あなたの Discord snowflake で access.json をシード (allowlist
+#    モード — pairing 不要)、run.sh を生成して registry に登録します:
 dcbot new business-bot                 # ./business-bot/ を作成
 dcbot new business-bot --dir ~/bots/x  # または任意のパス
 dcbot new business-bot --here          # またはカレント dir にデプロイ
 
-# 4. 起動:
+# 3. 起動:
 dcbot start business-bot               # tmux セッション dcbot-business-bot
 dcbot attach business-bot              # claude セッションにアタッチ
 ```

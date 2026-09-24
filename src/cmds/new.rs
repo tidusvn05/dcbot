@@ -142,6 +142,27 @@ pub fn run(opts: NewOpts) -> Result<()> {
         }
     }
 
+    // Discord channel plugin — auto-install so `dcbot start` never lands
+    // on "plugin not installed" inside the tmux session.
+    let pstate = crate::claude::plugin_state(&dir);
+    if pstate != crate::claude::PluginState::Ready {
+        println!(
+            "{}",
+            match pstate {
+                crate::claude::PluginState::Disabled => t!("plugin.enabling"),
+                _ => t!("plugin.installing"),
+            }
+        );
+        match crate::claude::ensure_plugin(&dir) {
+            Ok(()) => println!("{} {}", style("✓").green().bold(), t!("plugin.installed")),
+            Err(e) => eprintln!(
+                "{} {}",
+                style(t!("common.warn")).yellow().bold(),
+                t!("plugin.failed", err = e.to_string())
+            ),
+        }
+    }
+
     // Owner snowflake — empty keeps pairing mode.
     let owner = match opts.owner {
         Some(o) => o.trim().to_string(),

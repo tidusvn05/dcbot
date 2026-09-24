@@ -95,13 +95,20 @@ doctor:
   access_parses: "access.json をパース可能"
   policy_pairing: "dmPolicy がまだ 'pairing'"
   tool: "検出"
-  plugin: "~/.claude に discord プラグインあり"
-  plugin_hint: "claude 内でインストール: /plugin install discord@claude-plugins-official"
+  plugin: "discord プラグインがこの dir で使用可能"
+  plugin_hint: "未インストール — `dcbot start` が自動インストール、または: claude plugin install discord@claude-plugins-official"
+  plugin_disabled: "インストール済みだが無効 — `claude plugin enable discord@claude-plugins-official`"
   run_sh: "run.sh 正常"
   run_sh_bad: "run.sh に DISCORD_STATE_DIR または --channels がありません — `dcbot new` で再生成するか手動修正"
   run_sh_missing: "run.sh がありません — `dcbot start` で再生成されます"
   dup_token: "別の登録ボットが同じトークンを使用"
   session: "tmux セッション"
+
+plugin:
+  installing: "discord プラグイン未インストール — `claude plugin install discord@claude-plugins-official` を実行中…"
+  enabling: "discord プラグインが無効 — `claude plugin enable discord@claude-plugins-official` を実行中…"
+  installed: "discord プラグインの準備完了"
+  failed: "discord プラグインをインストールできません: %{err} — `claude plugin install discord@claude-plugins-official` を実行してから再試行してください"
 
 invite:
   no_id: "'%{name}' の client_id を特定できません — bot.toml も registry エントリもありません。先に `dcbot register <dir>` を実行してください。"

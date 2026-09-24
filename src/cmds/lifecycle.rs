@@ -32,6 +32,23 @@ pub fn start(name: &str, respawn: bool) -> Result<()> {
             t!("lifecycle.trust_failed", err = e.to_string())
         );
     }
+    // The channel plugin is a hard requirement — a started session without
+    // it just idles on "plugin not installed". Auto-install, bail loudly
+    // if that fails.
+    let pstate = crate::claude::plugin_state(&bot.dir);
+    if pstate != crate::claude::PluginState::Ready {
+        println!(
+            "{}",
+            match pstate {
+                crate::claude::PluginState::Disabled => t!("plugin.enabling"),
+                _ => t!("plugin.installing"),
+            }
+        );
+        if let Err(e) = crate::claude::ensure_plugin(&bot.dir) {
+            bail!(t!("plugin.failed", err = e.to_string()));
+        }
+        println!("{} {}", style("✓").green().bold(), t!("plugin.installed"));
+    }
     tmux::start(&session, &bot.dir, respawn)?;
     println!(
         "{} {}",

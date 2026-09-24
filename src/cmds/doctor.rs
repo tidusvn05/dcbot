@@ -186,22 +186,21 @@ pub fn run(target: Option<&str>) -> Result<i32> {
         });
     }
 
-    // 7. plugin installed (best-effort scan under ~/.claude)
-    let plugin_found = dirs::home_dir()
-        .map(|h| h.join(".claude"))
-        .and_then(|d| find_discord_plugin(&d, 3))
-        .is_some();
+    // 7. plugin installed + usable for this dir (installed_plugins.json,
+    // not a dir scan — a marketplace clone contains the sources even when
+    // nothing is installed)
+    let pstate = crate::claude::plugin_state(&bot.dir);
     checks.push(Check {
-        level: if plugin_found {
+        level: if pstate == crate::claude::PluginState::Ready {
             Level::Pass
         } else {
             Level::Warn
         },
         label: t!("doctor.plugin").to_string(),
-        detail: if plugin_found {
-            String::new()
-        } else {
-            t!("doctor.plugin_hint").to_string()
+        detail: match pstate {
+            crate::claude::PluginState::Ready => String::new(),
+            crate::claude::PluginState::Disabled => t!("doctor.plugin_disabled").to_string(),
+            crate::claude::PluginState::Missing => t!("doctor.plugin_hint").to_string(),
         },
     });
 
@@ -272,23 +271,4 @@ pub fn run(target: Option<&str>) -> Result<i32> {
         }
     }
     Ok(exit)
-}
-
-/// Look for the discord plugin under ~/.claude (plugins/, marketplaces/).
-fn find_discord_plugin(dir: &std::path::Path, depth: u8) -> Option<()> {
-    if depth == 0 {
-        return None;
-    }
-    let rd = fs::read_dir(dir).ok()?;
-    for e in rd.flatten() {
-        let p = e.path();
-        let name = e.file_name().to_string_lossy().to_lowercase();
-        if name == "discord" {
-            return Some(());
-        }
-        if p.is_dir() && !name.starts_with('.') && find_discord_plugin(&p, depth - 1).is_some() {
-            return Some(());
-        }
-    }
-    None
 }

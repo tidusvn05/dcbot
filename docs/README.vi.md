@@ -12,7 +12,7 @@ Lý do: plugin gốc giữ state ở một thư mục global và skill `/discord
 curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 ```
 
-**Yêu cầu:** Claude Code + discord plugin (`/plugin install discord@claude-plugins-official`), `tmux`, `bun`. Linux & macOS.
+**Yêu cầu:** Claude Code + discord plugin (`dcbot` tự cài), `tmux`, `bun`. Linux & macOS.
 
 ## Quick start
 
@@ -71,27 +71,25 @@ check sức khỏe deployment ở dir này
 
 Hỏi gì cũng được — phần sau dòng đầu là yêu cầu của bạn.
 
-### Setup mới — từ `plugin install` tới bot chạy
+### Setup mới — từ con số 0 tới bot chạy
 
 Yêu cầu: `claude` (Claude Code), `tmux`, `bun`, tài khoản Discord.
 
 ```bash
-# 1. Cài channel plugin — trong một session claude bất kỳ:
-/plugin install discord@claude-plugins-official
-
-# 2. Cài dcbot:
+# 1. Cài dcbot:
 curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | bash
 
-# 3. Tạo deployment. Wizard in sẵn các bước Developer Portal
+# 2. Tạo deployment. Wizard in sẵn các bước Developer Portal
 #    (New Application → Bot → Reset Token → bật Message Content Intent),
 #    validate token trực tiếp, tự sinh invite URL (không cần OAuth2
-#    URL Generator), seed access.json với Discord snowflake của bạn
-#    (allowlist mode — không cần pairing), ghi run.sh, và đăng ký bot:
+#    URL Generator), tự cài discord channel plugin, seed access.json
+#    với Discord snowflake của bạn (allowlist mode — không cần pairing),
+#    ghi run.sh, và đăng ký bot:
 dcbot new business-bot                 # tạo ./business-bot/
 dcbot new business-bot --dir ~/bots/x  # hoặc path chỉ định
 dcbot new business-bot --here          # hoặc deploy ngay tại cwd
 
-# 4. Chạy:
+# 3. Chạy:
 dcbot start business-bot               # tmux session dcbot-business-bot
 dcbot attach business-bot              # vào session claude
 ```
