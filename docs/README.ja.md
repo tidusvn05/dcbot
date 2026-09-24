@@ -92,13 +92,33 @@ dcbot は usage contract を同梱しています — `dcbot agents.md` で出�
 read `dcbot agents.md`
 
 今動いているボットは?
+```
+
+```text
+read `dcbot agents.md`
+
 business-bot という名前で新しいボットを作って、トークンは ...
+```
+
+```text
+read `dcbot agents.md`
+
 ~/.claude/channels/discord の既存ボットを legacy-bot として dcbot に移行して
+```
+
+```text
+read `dcbot agents.md`
+
 business-bot で pairing code a4f91c を承認して
+```
+
+```text
+read `dcbot agents.md`
+
 このディレクトリのデプロイを doctor して
 ```
 
-1行目はそのまま、2行目以降は例です — 何を聞いても構いません。
+何を聞いても構いません — 1行目以降はあなたの依頼です。
 
 ## コマンド
 

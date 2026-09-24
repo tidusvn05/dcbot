@@ -91,13 +91,33 @@ dcbot tự ship usage contract — `dcbot agents.md` in nó ra (cũng nằm ở
 read `dcbot agents.md`
 
 bot nào đang chạy?
+```
+
+```text
+read `dcbot agents.md`
+
 tạo bot mới tên business-bot, token là ...
+```
+
+```text
+read `dcbot agents.md`
+
 migrate bot cũ ở ~/.claude/channels/discord sang dcbot, đặt tên legacy-bot
+```
+
+```text
+read `dcbot agents.md`
+
 approve pairing code a4f91c cho business-bot
+```
+
+```text
+read `dcbot agents.md`
+
 check sức khỏe deployment ở dir này
 ```
 
-Giữ dòng đầu, các dòng sau là ví dụ — hỏi gì cũng được.
+Hỏi gì cũng được — phần sau dòng đầu là yêu cầu của bạn.
 
 ## Commands
 

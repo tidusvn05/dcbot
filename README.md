@@ -96,13 +96,33 @@ natural language:
 read `dcbot agents.md`
 
 which bots are running right now?
+```
+
+```text
+read `dcbot agents.md`
+
 create a new discord bot called business-bot, token is ...
+```
+
+```text
+read `dcbot agents.md`
+
 migrate my existing global discord bot into dcbot, name it legacy-bot
+```
+
+```text
+read `dcbot agents.md`
+
 approve pairing code a4f91c for business-bot
+```
+
+```text
+read `dcbot agents.md`
+
 doctor the deployment in this directory
 ```
 
-Keep the first line, then ask anything — any language works.
+Any language works — the ask after the first line is yours.
 
 ## Commands
 
