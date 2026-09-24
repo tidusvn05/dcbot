@@ -5,13 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-09-24
+
 ### Bug Fixes
 
 - Keep target filename so sha256sum -c can verify
 
 ### Documentation
 
-- Update for v0.1.0
 - Add fresh-setup and migration guides; register generates run.sh
 - Fold example asks into the copyable agent block
 - Split agent examples into per-case copyable blocks
@@ -20,20 +21,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Features
 
 - Non-interactive mode for agent-driven onboarding
-- `dcbot agent.md` prints the agent usage contract
-
-### Release
-
-- V0.2.0
+- `dcbot agents.md` prints the agent usage contract
+- `dcbot register` generates run.sh + logs/ on adopted deployments
 
 ### Rename
 
-- Dcbot agents.md as canonical (agent.md kept as alias), AGENTS.md file
+- `dcbot agents.md` as canonical (agent.md kept as alias), AGENTS.md file
+
+## [0.1.0] - 2026-09-24
 
 ### Bug Fixes
 
 - Executable bit on install.sh, changelog job pushes HEAD:main
-- Macos-13 runner retired — use macos-15-intel for x86_64 builds
+- macos-13 runner retired — use macos-15-intel for x86_64 builds
 
 ### Features
 
@@ -43,4 +43,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Tune crates.io keywords
 - Point repository metadata at tidusvn05/dcbot
-
