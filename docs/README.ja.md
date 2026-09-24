@@ -49,6 +49,12 @@ read `dcbot agents.md`
 business-bot という名前で新しいボットを作って、トークンは ...
 ```
 
+> **プロンプト内のトークン** はエージェントのモデルプロバイダを1回だけ
+> 通過します。dcbot 自体は `api.discord.com` (検証) にのみ送信し、
+> `.discord-state/.env` (モード `0600`) に保存します — 他の公開
+> エンドポイントには一切送られません。チャット/argv に残したくない場合は
+> 先に `export DCBOT_BOT_TOKEN=...` してから、トークン無しで依頼してください。
+
 ```text
 read `dcbot agents.md`
 

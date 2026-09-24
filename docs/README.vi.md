@@ -48,6 +48,12 @@ read `dcbot agents.md`
 tạo bot mới tên business-bot, token là ...
 ```
 
+> **Token trong prompt** sẽ đi qua model provider của agent đúng 1 lần.
+> dcbot chỉ gửi token tới `api.discord.com` (để validate) rồi ghi vào
+> `.discord-state/.env` mode `0600` — không endpoint public nào khác thấy
+> nó. Muốn token không nằm trong chat/argv thì `export
+> DCBOT_BOT_TOKEN=...` trước, rồi hỏi không cần kèm token.
+
 ```text
 read `dcbot agents.md`
 

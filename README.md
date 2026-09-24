@@ -53,6 +53,12 @@ read `dcbot agents.md`
 create a new discord bot called business-bot, token is ...
 ```
 
+> **Token in a prompt** transits your agent's model provider once. dcbot
+> itself only sends it to `api.discord.com` (validation) and writes it to
+> `.discord-state/.env` mode `0600` — nothing else on the public internet
+> sees it. To keep it out of chat/argv entirely, `export
+> DCBOT_BOT_TOKEN=...` first, then ask without the token.
+
 ```text
 read `dcbot agents.md`
 

@@ -37,6 +37,17 @@ nearest `.discord-state` upward.
 - Prereqs: `claude` + discord plugin (`/plugin install
   discord@claude-plugins-official`), `bun`, `tmux` on PATH.
 
+## Token handling
+
+- dcbot sends the token to exactly one place: `api.discord.com`
+  (validation) — then writes it to `.discord-state/.env` mode `0600`.
+  It never touches any other network endpoint.
+- A token pasted in chat transits the model provider once. If the user
+  prefers not to, suggest `export DCBOT_BOT_TOKEN=<token>` first, then
+  `dcbot new <name> --yes` — nothing in chat or argv.
+- Never echo, log, commit, or exfiltrate the token. `--token` in argv is
+  visible to `ps` — use the env var on shared machines.
+
 ## User has no token yet → print these steps and wait
 
 Discord Developer Portal → New Application → Bot → Reset Token →
