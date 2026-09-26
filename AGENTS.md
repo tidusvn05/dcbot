@@ -56,9 +56,18 @@ nearest `.discord-state` upward.
   deployment dir (`projects[dir].hasTrustDialogAccepted` in
   `~/.claude.json`) — otherwise the first tmux launch hangs on a prompt
   nobody can answer.
-- `dcbot start` DMs the first `allowFrom` entry in access.json once the
-  session is up ("<name> is online") — skipped in pairing mode (nobody
-  to greet); a failed DM only warns, the session stays up.
+- `dcbot start` verifies the session is *actually live* — waits for the
+  channel server (`server.ts` under claude's process tree; it exits on
+  gateway login failure) or the "gateway connected as" pane line
+  (default 45s, `DCBOT_LIVE_TIMEOUT_SECS` to override) — and only then
+  DMs the "online" greeting to the first `allowFrom` entry. A session
+  that dies or never confirms gets no greeting; the failed pane is
+  saved to `logs/failed-start-<ts>.log`, events to `logs/lifecycle.log`.
+- A tmux session whose pane fell back to a shell (run.sh exited,
+  claude gone) is dead, not "already running": `dcbot start` recycles
+  it automatically, `dcbot list` shows `dead`, `dcbot doctor` flags it.
+- `run.sh` hardens PATH (`~/.local/bin`, mise shims) — sessions spawned
+  from minimal-env contexts (systemd, agent tools) still find `claude`.
 
 ## Token handling
 

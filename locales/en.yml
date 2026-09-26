@@ -45,6 +45,14 @@ lifecycle:
   greeted_channel: "greeted channel %{channel} on Discord"
   greet_channel_failed: "couldn't greet channel %{channel}: %{err}"
   not_running: "bot '%{name}' is not running — `dcbot start %{name}` first."
+  stale_recycled: "session %{session} exists but claude already exited — recycling it"
+  verifying: "waiting for the session + Discord gateway to come up…"
+  live: "session is live — %{line}"
+  live_degraded: "session is running but the Discord gateway didn't confirm within %{secs}s — skipping the greeting; watch `dcbot logs %{name} -f`"
+  live_failed: "session didn't come up — %{reason}; pane saved to %{log}"
+  died: "tmux session vanished right after spawn"
+  dead_shell: "run.sh exited before reaching claude"
+  never_claude: "pane never reached claude within the timeout"
 
 dm:
   sent: "DM sent to %{user} via '%{bot}'"
@@ -60,6 +68,8 @@ list:
   st_running: "running"
   st_stopped: "stopped"
   st_missing: "missing dir"
+  st_dead: "dead"
+  warn_dead: "bot '%{name}' session is up but claude exited — `dcbot restart %{name}` to revive it."
   empty: "No bots registered — `dcbot new <name>` to create one."
   warn_missing_dir: "registry entry '%{name}' points to a deleted dir — `dcbot prune` to clean."
   warn_dup_token: "bots '%{a}' and '%{b}' share the same Discord token — both sessions will receive every DM (duplicate replies)."
@@ -80,6 +90,7 @@ status:
   groups: "groups"
   session: "session:"
   gateway: "gateway:"
+  session_dead: "dead — claude exited, pane is a leftover shell (`dcbot restart` recycles it)"
 
 access:
   pending_line: "%{code} → sender %{sender} (age %{age}, expires in %{ttl})"
@@ -121,8 +132,16 @@ doctor:
   run_sh: "run.sh is valid"
   run_sh_bad: "run.sh exists but lacks DISCORD_STATE_DIR or --channels — regenerate via `dcbot new` or fix by hand"
   run_sh_missing: "run.sh missing — `dcbot start` will regenerate it"
+  run_sh_path: "run.sh hardens PATH for minimal-env spawns"
+  run_sh_path_off: "no PATH hardening — `dcbot start` upgrades it (or the file is user-modified)"
+  settings_allow: "settings.json pre-allows the discord tools"
+  settings_allow_off: "missing discord-tool allows — `dcbot start` rewrites settings.json"
   dup_token: "another registered bot uses the same token"
   session: "tmux session"
+  session_dead: "tmux session exists but claude exited"
+  session_dead_hint: "pane is a leftover shell — `dcbot restart` recycles it"
+  gateway: "Discord gateway connected"
+  gateway_missing: "no 'gateway connected' line in the pane yet — check `dcbot logs`"
 
 plugin:
   installing: "discord plugin not installed — running `claude plugin install discord@claude-plugins-official`…"

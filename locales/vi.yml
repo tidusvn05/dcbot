@@ -45,6 +45,14 @@ lifecycle:
   greeted_channel: "đã gửi greeting tới channel %{channel} trên Discord"
   greet_channel_failed: "không gửi được greeting tới channel %{channel}: %{err}"
   not_running: "bot '%{name}' không chạy — `dcbot start %{name}` trước."
+  stale_recycled: "session %{session} tồn tại nhưng claude đã thoát — đang khởi tạo lại"
+  verifying: "đang đợi session + Discord gateway khởi động…"
+  live: "session đã live — %{line}"
+  live_degraded: "session đang chạy nhưng Discord gateway chưa xác nhận sau %{secs}s — bỏ qua greeting; xem `dcbot logs %{name} -f`"
+  live_failed: "session không khởi động được — %{reason}; đã lưu pane vào %{log}"
+  died: "tmux session biến mất ngay sau khi spawn"
+  dead_shell: "run.sh đã thoát trước khi vào claude"
+  never_claude: "pane không vào được claude trong thời gian chờ"
 
 dm:
   sent: "đã gửi DM tới %{user} qua '%{bot}'"
@@ -60,6 +68,8 @@ list:
   st_running: "đang chạy"
   st_stopped: "đã dừng"
   st_missing: "mất thư mục"
+  st_dead: "chết"
+  warn_dead: "session của '%{name}' còn sống nhưng claude đã thoát — `dcbot restart %{name}` để hồi sinh."
   empty: "Chưa có bot nào — `dcbot new <name>` để tạo."
   warn_missing_dir: "entry '%{name}' trỏ tới thư mục đã xóa — `dcbot prune` để dọn."
   warn_dup_token: "bot '%{a}' và '%{b}' dùng chung một Discord token — cả hai session sẽ nhận mọi DM (reply trùng)."
@@ -80,6 +90,7 @@ status:
   groups: "groups"
   session: "session:"
   gateway: "gateway:"
+  session_dead: "đã chết — claude thoát, pane chỉ còn shell (`dcbot restart` khởi động lại)"
 
 access:
   pending_line: "%{code} → sender %{sender} (tuổi %{age}, hết hạn sau %{ttl})"
@@ -121,8 +132,16 @@ doctor:
   run_sh: "run.sh hợp lệ"
   run_sh_bad: "run.sh thiếu DISCORD_STATE_DIR hoặc --channels — tạo lại bằng `dcbot new` hoặc sửa tay"
   run_sh_missing: "thiếu run.sh — `dcbot start` sẽ tự tạo lại"
+  run_sh_path: "run.sh đã harden PATH cho spawn môi trường tối thiểu"
+  run_sh_path_off: "thiếu PATH hardening — `dcbot start` sẽ nâng cấp (hoặc file đã bị sửa tay)"
+  settings_allow: "settings.json đã pre-allow discord tools"
+  settings_allow_off: "thiếu discord-tool allow — `dcbot start` sẽ ghi lại"
   dup_token: "một bot khác trong registry dùng cùng token"
   session: "tmux session"
+  session_dead: "tmux session còn tồn tại nhưng claude đã thoát"
+  session_dead_hint: "pane chỉ còn shell — `dcbot restart` để khởi động lại"
+  gateway: "Discord gateway đã kết nối"
+  gateway_missing: "chưa thấy dòng 'gateway connected' trong pane — kiểm tra `dcbot logs`"
 
 plugin:
   installing: "chưa có discord plugin — đang chạy `claude plugin install discord@claude-plugins-official`…"

@@ -30,6 +30,15 @@ set -euo pipefail
 cd "$(dirname "$0")"
 export DISCORD_STATE_DIR="$PWD/.discord-state"
 
+# The pane may be spawned from a minimal-env context (systemd unit, agent
+# tool) whose PATH lacks the user toolchain — restore the usual spots
+# before resolving claude. Covers ~/.local/bin installs and mise shims.
+export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$HOME/.cargo/bin:$PATH"
+if ! command -v claude >/dev/null; then
+  echo "[run.sh] ERROR: claude not found on PATH (=$PATH)" >&2
+  exit 127
+fi
+
 if [[ "${1:-}" == "--respawn" ]]; then
   while true; do
     claude --channels plugin:discord@claude-plugins-official "$@" || true
@@ -40,6 +49,40 @@ else
   exec claude --channels plugin:discord@claude-plugins-official "$@"
 fi
 "#;
+
+/// The pre-PATH-hardening template — kept so `write_run_sh` can upgrade
+/// it in place; user-modified run.sh files are left alone instead.
+pub const RUN_SH_V1: &str = r#"#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+export DISCORD_STATE_DIR="$PWD/.discord-state"
+
+if [[ "${1:-}" == "--respawn" ]]; then
+  while true; do
+    claude --channels plugin:discord@claude-plugins-official "$@" || true
+    echo "[run.sh] claude exited — restarting in 5s (Ctrl-C to stop)"
+    sleep 5
+  done
+else
+  exec claude --channels plugin:discord@claude-plugins-official "$@"
+fi
+"#;
+
+/// Ensure `<dir>/run.sh` exists and carries the current template.
+/// Missing or byte-identical v1 → (re)written; anything else is a user
+/// edit and is preserved (doctor flags the missing PATH hardening).
+pub fn write_run_sh(dir: &Path) -> Result<()> {
+    let path = dir.join("run.sh");
+    let needs = match fs::read_to_string(&path) {
+        Ok(body) => body == RUN_SH_V1,
+        Err(_) => true,
+    };
+    if needs {
+        fs::write(&path, RUN_SH)?;
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o755))?;
+    }
+    Ok(())
+}
 
 /// Session rule file — Claude Code auto-loads `.claude/rules/*.md` at launch
 /// (same priority as CLAUDE.md). Teaches the session that access control goes
@@ -413,9 +456,7 @@ pub fn run(opts: NewOpts) -> Result<()> {
     };
     manifest::save(&dir, &manifest)?;
 
-    let run_sh = dir.join("run.sh");
-    fs::write(&run_sh, RUN_SH)?;
-    fs::set_permissions(&run_sh, fs::Permissions::from_mode(0o755))?;
+    write_run_sh(&dir)?;
 
     let gi = dir.join(".gitignore");
     let gi_body = fs::read_to_string(&gi).unwrap_or_default();

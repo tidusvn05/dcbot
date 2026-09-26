@@ -45,6 +45,14 @@ lifecycle:
   greeted_channel: "channel %{channel} に greeting を送信しました"
   greet_channel_failed: "channel %{channel} へ greeting を送信できません: %{err}"
   not_running: "ボット '%{name}' は実行されていません — 先に `dcbot start %{name}`。"
+  stale_recycled: "セッション %{session} は残っていますが claude は終了済み — 再作成します"
+  verifying: "セッションと Discord gateway の起動を待っています…"
+  live: "セッションは live です — %{line}"
+  live_degraded: "セッションは起動していますが Discord gateway が %{secs}s 以内に確認できませんでした — greeting をスキップします。`dcbot logs %{name} -f` で確認してください"
+  live_failed: "セッションが起動しませんでした — %{reason}; pane を %{log} に保存しました"
+  died: "tmux セッションが spawn 直後に消えました"
+  dead_shell: "run.sh が claude 起動前に終了しました"
+  never_claude: "タイムアウト内に pane が claude に到達しませんでした"
 
 dm:
   sent: "%{user} に DM を送信しました（'%{bot}' 経由）"
@@ -60,6 +68,8 @@ list:
   st_running: "実行中"
   st_stopped: "停止"
   st_missing: "dir 不明"
+  st_dead: "dead"
+  warn_dead: "ボット '%{name}' のセッションは残っていますが claude が終了しています — `dcbot restart %{name}` で復旧。"
   empty: "登録されたボットはありません — `dcbot new <name>` で作成。"
   warn_missing_dir: "エントリ '%{name}' は削除済みのディレクトリを指しています — `dcbot prune` で整理。"
   warn_dup_token: "ボット '%{a}' と '%{b}' が同じ Discord トークンを共有 — 両セッションが全 DM を受信します (重複返信)。"
@@ -80,6 +90,7 @@ status:
   groups: "groups"
   session: "セッション:"
   gateway: "ゲートウェイ:"
+  session_dead: "dead — claude は終了、pane は shell のまま (`dcbot restart` で再起動)"
 
 access:
   pending_line: "%{code} → sender %{sender} (経過 %{age}, %{ttl} で失効)"
@@ -121,8 +132,16 @@ doctor:
   run_sh: "run.sh 正常"
   run_sh_bad: "run.sh に DISCORD_STATE_DIR または --channels がありません — `dcbot new` で再生成するか手動修正"
   run_sh_missing: "run.sh がありません — `dcbot start` で再生成されます"
+  run_sh_path: "run.sh が最小環境 spawn 用に PATH を補強済み"
+  run_sh_path_off: "PATH 補強がありません — `dcbot start` で更新 (または手編集済み)"
+  settings_allow: "settings.json が discord ツールを事前許可"
+  settings_allow_off: "discord ツール許可がありません — `dcbot start` で再生成"
   dup_token: "別の登録ボットが同じトークンを使用"
   session: "tmux セッション"
+  session_dead: "tmux セッションは存在するが claude は終了している"
+  session_dead_hint: "pane は shell のまま — `dcbot restart` で再起動"
+  gateway: "Discord gateway 接続済み"
+  gateway_missing: "pane に 'gateway connected' 行がありません — `dcbot logs` を確認"
 
 plugin:
   installing: "discord プラグイン未インストール — `claude plugin install discord@claude-plugins-official` を実行中…"
