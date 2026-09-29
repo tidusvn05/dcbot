@@ -101,7 +101,7 @@ dcbot start business-bot               # tmux session dcbot-business-bot
 dcbot attach business-bot              # jump into the claude session
 ```
 
-DM your bot — with your snowflake seeded it just works. If you left it empty (pairing mode), the bot replies with a code; approve it with `dcbot approve <code>` (run in the deployment dir or pass the bot name) — or run `dcbot pair --wait` first, then DM, to auto-approve. Skip the `/discord:access pair` hint in the bot's reply — inside a dcbot deployment that skill edits the global state dir, not this bot's.
+DM your bot — with your snowflake seeded it just works. Left it empty, the default is a locked allowlist: unknown DMs are silently dropped — add yourself with `dcbot allow <snowflake>`. No snowflake handy? Opt into pairing (`dcbot new --pair`, or `dcbot policy pairing` later) — the bot replies with a code you approve via `dcbot approve <code>` (run in the deployment dir or pass the bot name), or auto-approve by running `dcbot pair --wait` first, then DMing. Skip the `/discord:access pair` hint in the bot's reply — inside a dcbot deployment that skill edits the global state dir, not this bot's.
 
 ### Migrating an existing global bot
 
@@ -147,6 +147,7 @@ Do **not** launch `claude --channels …` manually anymore — without `DISCORD_
 | `dcbot register <dir> / forget / prune` | Registry management & drift cleanup |
 | `dcbot config set lang <en\|vi\|ja>` | Persist UI language |
 | `dcbot completions <shell>` | Shell completions |
+| `dcbot update [--check] [--version <tag>]` | Self-update the dcbot binary from GitHub Releases |
 
 Name arguments are optional inside a deployment dir — dcbot resolves the bot by walking up to the nearest `.discord-state`.
 
@@ -170,7 +171,7 @@ Name arguments are optional inside a deployment dir — dcbot resolves the bot b
 
 ## Access model (same semantics as the upstream plugin)
 
-- `dmPolicy`: `pairing` (default — unknown sender gets a code), `allowlist` (drop silently), `disabled`.
+- `dmPolicy`: `allowlist` (default — unknown senders dropped silently), `pairing` (opt-in — sender gets a code), `disabled`.
 - `approve` moves a pending `senderId` into `allowFrom` and drops the `approved/<senderId>` marker the server polls for.
 - Guild channels are opt-in per **channel** snowflake; threads inherit the parent; `requireMention` defaults to true.
 - `dcbot new` seeds `allowlist` with your snowflake when provided — the lockdown the plugin recommends.
@@ -213,6 +214,8 @@ From source (Rust stable):
 ```bash
 cargo install --path .
 ```
+
+Already installed? `dcbot update` self-updates to the latest release (`--check` to peek first).
 
 ## License
 

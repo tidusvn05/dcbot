@@ -23,12 +23,13 @@ new:
     (ボットが DM を送るために必須 — `dcbot invite %{name} --open` で再表示)
   open_invite: "招待 URL をブラウザで開きますか？"
   intent_missing: "Message Content Intent がオフです — Bot → Privileged Gateway Intents で有効化してください。無効だとボットはメッセージ本文を読めません。"
-  owner_prompt: "あなたの Discord ユーザー ID (snowflake) (空 = pairing モードのまま)"
+  owner_prompt: "あなたの Discord ユーザー ID (snowflake) (空 = allowlist ロック — 未知の DM は drop)"
   owner_invalid: "'%{id}' は Discord snowflake ではありません (17-20 桁の数字)"
   created: "デプロイを作成しました: %{dir}"
   start_now: "今すぐボットセッションを起動しますか (tmux)?"
   start_hint: "後で: `dcbot start %{name}`"
-  autopair_prompt: "pairing モード — 今すぐボットに DM すればコードを自動承認します (60s 待機)?"
+  pairing_prompt: "owner なし — pairing モードを有効化? (デフォルト: allowlist ロック)"
+  locked_hint: "DM はロック中 (allowlist, 空) — `dcbot allow <snowflake>` で追加、または pairing 有効化: `dcbot policy pairing` して `dcbot pair --wait`"
   pair_hint: "pairing モード: `dcbot start %{name}` の後に `dcbot pair --wait` を実行してから DM — または `dcbot approve <code>` で承認"
   pair_skipped: "--pair は無視されました — owner snowflake がシード済みのため pairing は不要です"
 
@@ -83,7 +84,8 @@ status:
 
 access:
   pending_line: "%{code} → sender %{sender} (経過 %{age}, %{ttl} で失効)"
-  no_pending: "保留中のペアリングはありません — 未許可の sender が DM するとコードが発行されます"
+  no_pending: "保留中のペアリングはありません — コードは dmPolicy 'pairing' 時のみ発行"
+  pair_not_pairing: "dmPolicy が 'pairing' ではありません — コードは pairing モードでのみ発行されます。先に `dcbot policy pairing` を実行"
   approve_hint: "承認: dcbot approve <code>"
   pair_waiting: "ペアリング DM を %{secs}s 待機中 — ボットに何か送信してください…"
   pair_timeout: "%{secs}s 以内にペアリング DM がありません — DM 後に `dcbot pair --wait` を再実行"
@@ -149,3 +151,18 @@ config:
   lang_set: "言語を %{lang} に設定"
   file: "config:"
   effective: "有効なロケール: %{lang}"
+
+update:
+  fetch_fail: "GitHub リクエスト失敗: %{err}"
+  unsupported: "未対応のプラットフォーム: %{plat}"
+  versions: "現在: %{cur} → 対象: %{new}"
+  uptodate: "すでに最新です"
+  available: "新バージョンあり: %{tag} — `dcbot update` を実行"
+  downloading: "%{name} をダウンロード中…"
+  no_sha_tool: "sha256sum/shasum が見つかりません — チェックサム検証をスキップ"
+  bad_sha: "チェックサム検証失敗: %{err}"
+  extract_fail: "アーカイブに dcbot バイナリがありません"
+  mismatch: "ダウンロードしたバイナリは '%{got}' — インストールを拒否"
+  wont_run: "ダウンロードしたバイナリが実行できません — インストールを拒否"
+  dev_binary: "%{path} は cargo ビルドです — `cargo install --path .` または install.sh を使用"
+  done: "%{ver} に更新しました (%{path})"

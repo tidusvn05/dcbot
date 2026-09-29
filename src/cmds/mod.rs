@@ -7,3 +7,4 @@ pub mod lifecycle;
 pub mod list;
 pub mod new;
 pub mod registry_cmds;
+pub mod update;

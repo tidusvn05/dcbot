@@ -23,12 +23,13 @@ new:
     (bắt buộc để bot DM được với bạn — `dcbot invite %{name} --open` mở lại)
   open_invite: "Mở invite URL trong browser ngay?"
   intent_missing: "Message Content Intent đang TẮT — bật tại Bot → Privileged Gateway Intents, nếu không bot không đọc được nội dung tin nhắn."
-  owner_prompt: "Discord user ID snowflake của bạn (để trống = giữ pairing mode)"
+  owner_prompt: "Discord user ID snowflake của bạn (để trống = allowlist khoá — DM lạ bị drop)"
   owner_invalid: "'%{id}' không phải Discord snowflake (17-20 chữ số)"
   created: "đã tạo deployment tại %{dir}"
   start_now: "Khởi động session bot ngay (tmux)?"
   start_hint: "Sau này: `dcbot start %{name}`"
-  autopair_prompt: "Pairing mode — DM cho bot ngay để tôi tự duyệt code (chờ 60s)?"
+  pairing_prompt: "Không có owner — bật pairing mode? (mặc định: allowlist khoá)"
+  locked_hint: "DM đang khoá (allowlist, rỗng) — thêm bạn bằng `dcbot allow <snowflake>`, hoặc bật pairing: `dcbot policy pairing` rồi `dcbot pair --wait`"
   pair_hint: "pairing mode: sau `dcbot start %{name}`, chạy `dcbot pair --wait` rồi DM bot — hoặc duyệt code bằng `dcbot approve <code>`"
   pair_skipped: "bỏ qua --pair — đã seed owner snowflake, allowlist không cần pairing"
 
@@ -83,7 +84,8 @@ status:
 
 access:
   pending_line: "%{code} → sender %{sender} (tuổi %{age}, hết hạn sau %{ttl})"
-  no_pending: "không có pairing nào đang chờ — sender lạ sẽ nhận code khi DM bot"
+  no_pending: "không có pairing nào đang chờ — code chỉ được cấp ở dmPolicy 'pairing'"
+  pair_not_pairing: "dmPolicy không phải 'pairing' — code chỉ được cấp ở pairing mode; chạy `dcbot policy pairing` trước"
   approve_hint: "duyệt bằng: dcbot approve <code>"
   pair_waiting: "đang chờ %{secs}s cho một DM pairing — nhắn gì đó cho bot…"
   pair_timeout: "không có DM pairing trong %{secs}s — DM bot rồi chạy lại `dcbot pair --wait`"
@@ -149,3 +151,18 @@ config:
   lang_set: "đã đặt ngôn ngữ %{lang}"
   file: "config:"
   effective: "locale hiệu lực: %{lang}"
+
+update:
+  fetch_fail: "gọi GitHub thất bại: %{err}"
+  unsupported: "platform không hỗ trợ: %{plat}"
+  versions: "hiện tại: %{cur} → mục tiêu: %{new}"
+  uptodate: "đã là bản mới nhất"
+  available: "có bản mới: %{tag} — chạy `dcbot update`"
+  downloading: "đang tải %{name}…"
+  no_sha_tool: "không có sha256sum/shasum — bỏ qua kiểm tra checksum"
+  bad_sha: "kiểm tra checksum thất bại: %{err}"
+  extract_fail: "archive không chứa binary dcbot"
+  mismatch: "binary tải về báo '%{got}' — từ chối cài đặt"
+  wont_run: "binary tải về không chạy được — từ chối cài đặt"
+  dev_binary: "%{path} là build trong target/ — dùng `cargo install --path .` hoặc install.sh"
+  done: "đã cập nhật lên %{ver} (%{path})"
