@@ -23,12 +23,13 @@ new:
     (required so the bot can DM you — `dcbot invite %{name} --open` re-opens it)
   open_invite: "Open the invite URL in your browser now?"
   intent_missing: "Message Content Intent is OFF — enable it under Bot → Privileged Gateway Intents, or the bot can't read message text."
-  owner_prompt: "Your Discord user ID snowflake (empty = keep pairing mode)"
+  owner_prompt: "Your Discord user ID snowflake (empty = locked allowlist — unknown DMs are dropped)"
   owner_invalid: "'%{id}' is not a numeric Discord snowflake (17-20 digits)"
   created: "deployment created at %{dir}"
   start_now: "Start the bot session now (tmux)?"
   start_hint: "Later: `dcbot start %{name}`"
-  autopair_prompt: "Pairing mode — DM your bot now and I'll auto-approve the code (waits 60s)?"
+  pairing_prompt: "No owner — enable pairing mode? (default: locked allowlist)"
+  locked_hint: "DMs are locked (allowlist, no entries) — add yourself with `dcbot allow <snowflake>`, or enable pairing: `dcbot policy pairing` then `dcbot pair --wait`"
   pair_hint: "pairing mode: after `dcbot start %{name}`, run `dcbot pair --wait` then DM the bot — or approve a code with `dcbot approve <code>`"
   pair_skipped: "--pair ignored — an owner snowflake was seeded, the allowlist needs no pairing"
 
@@ -83,7 +84,8 @@ status:
 
 access:
   pending_line: "%{code} → sender %{sender} (age %{age}, expires in %{ttl})"
-  no_pending: "no pending pairings — unknown senders get a code when they DM the bot"
+  no_pending: "no pending pairings — codes are only issued under 'pairing' dmPolicy"
+  pair_not_pairing: "dmPolicy is not 'pairing' — pairing codes are only issued in pairing mode; run `dcbot policy pairing` first"
   approve_hint: "approve with: dcbot approve <code>"
   pair_waiting: "waiting %{secs}s for a pairing DM — send your bot any message…"
   pair_timeout: "no pairing DM within %{secs}s — DM the bot, then run `dcbot pair --wait` again"
@@ -149,3 +151,18 @@ config:
   lang_set: "language set to %{lang}"
   file: "config:"
   effective: "effective locale: %{lang}"
+
+update:
+  fetch_fail: "GitHub request failed: %{err}"
+  unsupported: "unsupported platform: %{plat}"
+  versions: "current: %{cur} → target: %{new}"
+  uptodate: "already up to date"
+  available: "update available: %{tag} — run `dcbot update`"
+  downloading: "downloading %{name}…"
+  no_sha_tool: "no sha256sum/shasum found — skipping checksum verification"
+  bad_sha: "checksum verification failed: %{err}"
+  extract_fail: "archive did not contain a dcbot binary"
+  mismatch: "downloaded binary reports '%{got}' — refusing to install"
+  wont_run: "downloaded binary won't run — refusing to install"
+  dev_binary: "%{path} is a cargo build dir — use `cargo install --path .` or install.sh instead"
+  done: "updated to %{ver} (%{path})"
