@@ -4,9 +4,8 @@ use rust_i18n::t;
 use serde_json::json;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-use crate::cmds::new::RUN_SH;
 use crate::resolve::{resolve, Resolved};
 use crate::tmux;
 use crate::{discord, state};
@@ -16,18 +15,29 @@ pub fn start(name: &str, respawn: bool) -> Result<()> {
         bail!(t!("lifecycle.tmux_missing"));
     }
     let bot = resolve(Some(name))?;
-    let run_sh = bot.dir.join("run.sh");
-    if !run_sh.exists() {
-        // Self-heal: manifest exists but run.sh was deleted.
-        fs::write(&run_sh, RUN_SH)?;
-        fs::set_permissions(&run_sh, fs::Permissions::from_mode(0o755))?;
-    }
+    // Self-heal: manifest exists but run.sh was deleted — and upgrade
+    // v1 deployments to the PATH-hardened template.
+    crate::cmds::new::write_run_sh(&bot.dir)?;
     // Same for the session rule file — deployments created before it existed.
     crate::cmds::new::write_rule(&bot.dir)?;
     crate::cmds::new::write_settings(&bot.dir)?;
     let session = tmux::session_name(&bot.name);
     if tmux::exists(&session) {
-        bail!(t!("lifecycle.already_running", name = bot.name.as_str()));
+        // A pane that fell back to a shell after run.sh died still counts
+        // as "running" to has-session — but nothing listens on Discord.
+        // Recycle it instead of bouncing off already_running forever.
+        match tmux::pane_state(&session) {
+            tmux::PaneState::DeadShell | tmux::PaneState::Gone => {
+                eprintln!(
+                    "{} {}",
+                    style(t!("common.warn")).yellow().bold(),
+                    t!("lifecycle.stale_recycled", session = session.as_str())
+                );
+                let _ = tmux::kill(&session);
+                log_event(&bot.dir, "recycled stale session pane");
+            }
+            _ => bail!(t!("lifecycle.already_running", name = bot.name.as_str())),
+        }
     }
     if let Err(e) = ensure_trusted(&bot.dir) {
         eprintln!(
@@ -67,13 +77,146 @@ pub fn start(name: &str, respawn: bool) -> Result<()> {
         "  {}",
         t!("lifecycle.attach_hint", name = bot.name.as_str())
     );
-    // Sanity window — if the session died instantly (bad run.sh, missing
-    // bun) don't DM a false "online" greeting.
-    std::thread::sleep(std::time::Duration::from_secs(2));
-    if tmux::exists(&session) {
-        greet(&bot);
+    log_event(&bot.dir, "session spawned");
+    println!("{}", t!("lifecycle.verifying"));
+    match verify_live(&session) {
+        Live::Connected(line) => {
+            println!(
+                "{} {}",
+                style("✓").green().bold(),
+                t!("lifecycle.live", line = line.as_str())
+            );
+            log_event(&bot.dir, &format!("live: {line}"));
+            greet(&bot);
+        }
+        Live::Degraded => {
+            // claude is up but the gateway never announced itself — the
+            // bot may still come online, but don't DM a false "online".
+            eprintln!(
+                "{} {}",
+                style(t!("common.warn")).yellow().bold(),
+                t!(
+                    "lifecycle.live_degraded",
+                    secs = live_timeout().as_secs(),
+                    name = bot.name.as_str()
+                )
+            );
+            log_event(&bot.dir, "degraded: gateway never confirmed");
+        }
+        Live::Dead(reason) => {
+            let log = save_failed_capture(&bot.dir, &session);
+            log_event(&bot.dir, &format!("dead: {reason}"));
+            bail!(t!(
+                "lifecycle.live_failed",
+                reason = reason.as_str(),
+                log = log.display().to_string().as_str()
+            ));
+        }
     }
     Ok(())
+}
+
+enum Live {
+    /// The channel server reported "gateway connected as …".
+    Connected(String),
+    /// claude is still running past the timeout but the gateway never
+    /// announced itself — session exists, greeting withheld.
+    Degraded,
+    /// The pane died or never reached claude.
+    Dead(String),
+}
+
+/// How long to wait for the Discord gateway before giving up. First
+/// boots can be slow (plugin deps, cold model start) — 45s default,
+/// overridable for tests via DCBOT_LIVE_TIMEOUT_SECS.
+fn live_timeout() -> std::time::Duration {
+    std::env::var("DCBOT_LIVE_TIMEOUT_SECS")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .map(std::time::Duration::from_secs)
+        .unwrap_or(std::time::Duration::from_secs(45))
+}
+
+/// Poll the pane until the channel server announces the Discord gateway,
+/// the pane demonstrably dies, or the timeout hits. A tmux session that
+/// merely "exists" is not proof — a dead run.sh still holds the pane
+/// open on a fallback shell.
+fn verify_live(session: &str) -> Live {
+    let deadline = std::time::Instant::now() + live_timeout();
+    loop {
+        let state = tmux::pane_state(session);
+        match &state {
+            tmux::PaneState::Gone => {
+                return Live::Dead(t!("lifecycle.died").to_string());
+            }
+            tmux::PaneState::DeadShell => {
+                return Live::Dead(pane_diagnosis(session));
+            }
+            _ => {}
+        }
+        if let Some(line) = tmux::channel_status(session) {
+            return Live::Connected(line);
+        }
+        if std::time::Instant::now() >= deadline {
+            return match state {
+                tmux::PaneState::Claude | tmux::PaneState::Other(_) => Live::Degraded,
+                _ => Live::Dead(t!("lifecycle.never_claude").to_string()),
+            };
+        }
+        std::thread::sleep(std::time::Duration::from_millis(500));
+    }
+}
+
+/// Pull the likely failure reason out of a dead pane's tail — the
+/// command-not-found / error lines — so `start` can fail with something
+/// actionable instead of a bare "died".
+fn pane_diagnosis(session: &str) -> String {
+    let Ok(body) = tmux::capture(session, 60) else {
+        return t!("lifecycle.dead_shell").to_string();
+    };
+    let hits: Vec<&str> = body
+        .lines()
+        .filter(|l| {
+            let l = l.trim();
+            !l.is_empty()
+                && (l.contains("command not found")
+                    || l.contains("[run.sh]")
+                    || l.to_lowercase().contains("error"))
+        })
+        .collect();
+    if hits.is_empty() {
+        t!("lifecycle.dead_shell").to_string()
+    } else {
+        hits[hits.len().saturating_sub(3)..].join(" | ")
+    }
+}
+
+/// `logs/failed-start-<ts>.log` — full pane scrollback, for post-mortem.
+fn save_failed_capture(dir: &Path, session: &str) -> PathBuf {
+    let log = dir.join("logs").join(format!(
+        "failed-start-{}.log",
+        chrono::Local::now().format("%Y%m%d-%H%M%S")
+    ));
+    if let Ok(body) = tmux::capture(session, 10000) {
+        let _ = fs::create_dir_all(log.parent().unwrap());
+        let _ = fs::write(&log, body);
+    }
+    log
+}
+
+/// `logs/lifecycle.log` — append-only event trail so a silently-dead
+/// session is debuggable after the fact, not just in live scrollback.
+fn log_event(dir: &Path, msg: &str) {
+    use std::io::Write;
+    let path = dir.join("logs").join("lifecycle.log");
+    let Ok(mut f) = fs::OpenOptions::new().create(true).append(true).open(&path) else {
+        return;
+    };
+    let _ = writeln!(
+        f,
+        "{} {msg}",
+        chrono::Local::now().format("%Y-%m-%d %H:%M:%S")
+    );
 }
 
 /// Announce that the bot is up: DM the first allowlisted user and post to
@@ -192,6 +335,7 @@ pub fn stop(name: &str) -> Result<()> {
     let bot = resolve(Some(name))?;
     let session = tmux::session_name(&bot.name);
     tmux::stop(&session)?;
+    log_event(&bot.dir, "stopped");
     println!(
         "{} {}",
         style("✓").green().bold(),
