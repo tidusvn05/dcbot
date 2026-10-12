@@ -204,7 +204,7 @@ pub fn run(target: Option<&str>) -> Result<i32> {
         },
     });
 
-    // 8. run.sh
+    // 8. run.sh — valid, and hardened for minimal-env spawns
     let run_sh = bot.dir.join("run.sh");
     match fs::read_to_string(&run_sh) {
         Ok(body) => {
@@ -218,6 +218,21 @@ pub fn run(target: Option<&str>) -> Result<i32> {
                     t!("doctor.run_sh_bad").to_string()
                 },
             });
+            if good {
+                checks.push(Check {
+                    level: if body.contains("$HOME/.local/bin") {
+                        Level::Pass
+                    } else {
+                        Level::Warn
+                    },
+                    label: t!("doctor.run_sh_path").to_string(),
+                    detail: if body.contains("$HOME/.local/bin") {
+                        String::new()
+                    } else {
+                        t!("doctor.run_sh_path_off").to_string()
+                    },
+                });
+            }
         }
         Err(_) => checks.push(Check {
             level: Level::Warn,
@@ -225,6 +240,31 @@ pub fn run(target: Option<&str>) -> Result<i32> {
             detail: t!("doctor.run_sh_missing").to_string(),
         }),
     }
+
+    // 8b. settings.json pre-allows the discord reply tool — without it a
+    // headless session stalls on a permission prompt nobody can answer.
+    let settings_ok = fs::read_to_string(bot.dir.join(".claude/settings.json"))
+        .ok()
+        .and_then(|raw| serde_json::from_str::<serde_json::Value>(&raw).ok())
+        .and_then(|d| {
+            d.get("permissions")?
+                .get("allow")?
+                .as_array()
+                .map(|a| {
+                    a.iter()
+                        .any(|v| v.as_str() == Some("mcp__plugin_discord_discord__reply"))
+                })
+        })
+        .unwrap_or(false);
+    checks.push(Check {
+        level: if settings_ok { Level::Pass } else { Level::Warn },
+        label: t!("doctor.settings_allow").to_string(),
+        detail: if settings_ok {
+            String::new()
+        } else {
+            t!("doctor.settings_allow_off").to_string()
+        },
+    });
 
     // 9. duplicate bot identity across registry
     if let Some(id) = &bot_user_id {
@@ -248,20 +288,42 @@ pub fn run(target: Option<&str>) -> Result<i32> {
         }
     }
 
-    // 10. runtime state
+    // 10. runtime state — "session exists" is not enough: a dead pane
+    // keeps has-session green while nothing listens on Discord.
     let session = tmux::session_name(&bot.name);
-    checks.push(Check {
-        level: Level::Info,
-        label: t!("doctor.session").to_string(),
-        detail: format!(
-            "{session}: {}",
-            if tmux::exists(&session) {
-                t!("list.st_running")
-            } else {
-                t!("list.st_stopped")
+    if tmux::exists(&session) {
+        match tmux::pane_state(&session) {
+            tmux::PaneState::DeadShell => checks.push(Check {
+                level: Level::Fail,
+                label: t!("doctor.session_dead").to_string(),
+                detail: t!("doctor.session_dead_hint").to_string(),
+            }),
+            tmux::PaneState::Claude | tmux::PaneState::Other(_) => {
+                checks.push(Check {
+                    level: Level::Pass,
+                    label: t!("doctor.session").to_string(),
+                    detail: format!("{session}: {}", t!("list.st_running")),
+                });
+                checks.push(Check {
+                    level: if tmux::channel_status(&session).is_some() {
+                        Level::Pass
+                    } else {
+                        Level::Warn
+                    },
+                    label: t!("doctor.gateway").to_string(),
+                    detail: tmux::channel_status(&session)
+                        .unwrap_or_else(|| t!("doctor.gateway_missing").to_string()),
+                });
             }
-        ),
-    });
+            tmux::PaneState::Gone => unreachable!(),
+        }
+    } else {
+        checks.push(Check {
+            level: Level::Info,
+            label: t!("doctor.session").to_string(),
+            detail: format!("{session}: {}", t!("list.st_stopped")),
+        });
+    }
 
     let mut exit = 0;
     for c in &checks {
