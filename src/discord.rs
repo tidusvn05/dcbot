@@ -14,8 +14,11 @@ fn api_base() -> String {
 pub const INVITE_PERMISSIONS: u64 =
     (1 << 6) | (1 << 10) | (1 << 11) | (1 << 15) | (1 << 16) | (1 << 38);
 
-/// application.flags bit for the Message Content gateway intent.
-pub const FLAG_MESSAGE_CONTENT: u64 = 1 << 18;
+/// application.flags bits for the Message Content gateway intent. The
+/// plain bit (1<<18) covers bots verified for 100+ guilds; the LIMITED
+/// bit (1<<19) is what Discord sets for smaller bots when the toggle
+/// is on — check either.
+pub const FLAGS_MESSAGE_CONTENT: u64 = (1 << 18) | (1 << 19);
 
 /// Deterministic OAuth2 invite URL — replaces the portal's URL Generator.
 pub fn invite_url(client_id: &str) -> String {
@@ -74,7 +77,7 @@ pub struct AppInfo {
 impl AppInfo {
     /// None = flags field missing, can't tell; Some(false) = intent OFF.
     pub fn message_content_intent(&self) -> Option<bool> {
-        self.flags.map(|f| f & FLAG_MESSAGE_CONTENT != 0)
+        self.flags.map(|f| f & FLAGS_MESSAGE_CONTENT != 0)
     }
 }
 
