@@ -247,17 +247,18 @@ pub fn run(target: Option<&str>) -> Result<i32> {
         .ok()
         .and_then(|raw| serde_json::from_str::<serde_json::Value>(&raw).ok())
         .and_then(|d| {
-            d.get("permissions")?
-                .get("allow")?
-                .as_array()
-                .map(|a| {
-                    a.iter()
-                        .any(|v| v.as_str() == Some("mcp__plugin_discord_discord__reply"))
-                })
+            d.get("permissions")?.get("allow")?.as_array().map(|a| {
+                a.iter()
+                    .any(|v| v.as_str() == Some("mcp__plugin_discord_discord__reply"))
+            })
         })
         .unwrap_or(false);
     checks.push(Check {
-        level: if settings_ok { Level::Pass } else { Level::Warn },
+        level: if settings_ok {
+            Level::Pass
+        } else {
+            Level::Warn
+        },
         label: t!("doctor.settings_allow").to_string(),
         detail: if settings_ok {
             String::new()

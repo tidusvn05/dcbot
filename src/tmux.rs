@@ -141,17 +141,13 @@ pub fn pane_state(session: &str) -> PaneState {
     // claude may be exec'd by the wrapper (pane comm = "bash" while a
     // claude child runs) — check the whole process tree, not just the
     // foreground command.
-    if cmd == "claude"
-        || descendants(pid).iter().any(|p| proc_comm(*p) == "claude")
-    {
+    if cmd == "claude" || descendants(pid).iter().any(|p| proc_comm(*p) == "claude") {
         return PaneState::Claude;
     }
     let argv = pane_argv(pid);
     let login_shell = argv
         .first()
-        .map(|a| {
-            a.starts_with('-') || argv.iter().skip(1).any(|a| a == "-l")
-        })
+        .map(|a| a.starts_with('-') || argv.iter().skip(1).any(|a| a == "-l"))
         .unwrap_or(false);
     if login_shell {
         return PaneState::DeadShell;
@@ -213,9 +209,7 @@ pub fn start(session: &str, dir: &Path, respawn: bool) -> Result<()> {
     } else {
         "./run.sh"
     };
-    let cmd = format!(
-        "{arg}; echo; echo '[dcbot] {DEAD_MARKER}'; exec ${{SHELL:-bash}} -l"
-    );
+    let cmd = format!("{arg}; echo; echo '[dcbot] {DEAD_MARKER}'; exec ${{SHELL:-bash}} -l");
     let status = Command::new("tmux")
         .args(["new-session", "-d", "-s", session, "-c"])
         .arg(dir)
