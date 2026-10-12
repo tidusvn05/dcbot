@@ -93,6 +93,11 @@ pub fn pair_wait(bot: &Resolved, secs: u64) -> Result<()> {
             .collect();
         match live.len() {
             0 => {
+                // Codes are only issued under dmPolicy "pairing" — under the
+                // default locked allowlist the wait could never succeed.
+                if a.dm_policy != "pairing" {
+                    bail!(t!("access.pair_not_pairing"));
+                }
                 if Instant::now() >= deadline {
                     bail!(t!("access.pair_timeout", secs = secs));
                 }

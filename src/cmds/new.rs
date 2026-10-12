@@ -30,6 +30,15 @@ set -euo pipefail
 cd "$(dirname "$0")"
 export DISCORD_STATE_DIR="$PWD/.discord-state"
 
+# The pane may be spawned from a minimal-env context (systemd unit, agent
+# tool) whose PATH lacks the user toolchain — restore the usual spots
+# before resolving claude. Covers ~/.local/bin installs and mise shims.
+export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$HOME/.cargo/bin:$PATH"
+if ! command -v claude >/dev/null; then
+  echo "[run.sh] ERROR: claude not found on PATH (=$PATH)" >&2
+  exit 127
+fi
+
 if [[ "${1:-}" == "--respawn" ]]; then
   while true; do
     claude --channels plugin:discord@claude-plugins-official "$@" || true
@@ -40,6 +49,40 @@ else
   exec claude --channels plugin:discord@claude-plugins-official "$@"
 fi
 "#;
+
+/// The pre-PATH-hardening template — kept so `write_run_sh` can upgrade
+/// it in place; user-modified run.sh files are left alone instead.
+pub const RUN_SH_V1: &str = r#"#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+export DISCORD_STATE_DIR="$PWD/.discord-state"
+
+if [[ "${1:-}" == "--respawn" ]]; then
+  while true; do
+    claude --channels plugin:discord@claude-plugins-official "$@" || true
+    echo "[run.sh] claude exited — restarting in 5s (Ctrl-C to stop)"
+    sleep 5
+  done
+else
+  exec claude --channels plugin:discord@claude-plugins-official "$@"
+fi
+"#;
+
+/// Ensure `<dir>/run.sh` exists and carries the current template.
+/// Missing or byte-identical v1 → (re)written; anything else is a user
+/// edit and is preserved (doctor flags the missing PATH hardening).
+pub fn write_run_sh(dir: &Path) -> Result<()> {
+    let path = dir.join("run.sh");
+    let needs = match fs::read_to_string(&path) {
+        Ok(body) => body == RUN_SH_V1,
+        Err(_) => true,
+    };
+    if needs {
+        fs::write(&path, RUN_SH)?;
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o755))?;
+    }
+    Ok(())
+}
 
 /// Session rule file — Claude Code auto-loads `.claude/rules/*.md` at launch
 /// (same priority as CLAUDE.md). Teaches the session that access control goes
@@ -54,8 +97,10 @@ the plugin's built-in skills.
   server never reads. dcbot equivalents: `dcbot approve <code>` ·
   `dcbot pair --wait` · `deny` · `allow` · `remove` · `policy` ·
   `group add|rm` · `set` · `status`.
-- Pairing: when the bot replies "Pairing required", approve from this dir —
-  `dcbot approve <code>` (the bot name resolves from `.discord-state`).
+- DMs default to a locked allowlist — add users with `dcbot allow
+  <snowflake>`. Pairing (`dcbot policy pairing`) is opt-in: when the bot
+  replies "Pairing required", approve from this dir — `dcbot approve
+  <code>` (the bot name resolves from `.discord-state`).
 - Proactive DM to an allowlisted user: `dcbot dm <text> [--to <snowflake>]`
   — works without an inbound message.
 - Replying to Discord: inbound messages arrive as `<channel
@@ -369,7 +414,8 @@ pub fn run(opts: NewOpts) -> Result<()> {
         }
     }
 
-    // Owner snowflake — empty keeps pairing mode.
+    // Owner snowflake — empty keeps a locked allowlist unless pairing is
+    // explicitly enabled below.
     let owner = match opts.owner {
         Some(o) => o.trim().to_string(),
         None if noninteractive => String::new(),
@@ -383,7 +429,18 @@ pub fn run(opts: NewOpts) -> Result<()> {
     if !owner.is_empty() && !is_snowflake(&owner) {
         bail!(t!("new.owner_invalid", id = owner.as_str()));
     }
-    let pairing_mode = owner.is_empty();
+    // Default dmPolicy is a locked allowlist — pairing is opt-in because the
+    // bot's "Pairing required" reply points at `/discord:access pair`, which
+    // writes the *global* state dir: the code could never be approved that
+    // way. `dcbot approve`/`dcbot pair --wait` do work, but only when the
+    // deployment actually opted into pairing.
+    let pairing_mode = owner.is_empty()
+        && (opts.pair
+            || (!noninteractive
+                && Confirm::with_theme(&theme)
+                    .with_prompt(t!("new.pairing_prompt").to_string())
+                    .default(false)
+                    .interact()?));
 
     // --- Write the deployment -------------------------------------------------
     let state_dir = dir.join(".discord-state");
@@ -395,10 +452,16 @@ pub fn run(opts: NewOpts) -> Result<()> {
     fs::write(&env_file, format!("DISCORD_BOT_TOKEN={token}\n"))?;
     fs::set_permissions(&env_file, fs::Permissions::from_mode(0o600))?;
 
-    let mut access = Access::default();
+    let mut access = Access {
+        dm_policy: if pairing_mode {
+            "pairing".to_string()
+        } else {
+            "allowlist".to_string()
+        },
+        ..Access::default()
+    };
     if !owner.is_empty() {
-        access.dm_policy = "allowlist".to_string();
-        access.allow_from.push(owner);
+        access.allow_from.push(owner.clone());
     }
     state::save(&state_dir, &access)?;
 
@@ -413,9 +476,7 @@ pub fn run(opts: NewOpts) -> Result<()> {
     };
     manifest::save(&dir, &manifest)?;
 
-    let run_sh = dir.join("run.sh");
-    fs::write(&run_sh, RUN_SH)?;
-    fs::set_permissions(&run_sh, fs::Permissions::from_mode(0o755))?;
+    write_run_sh(&dir)?;
 
     let gi = dir.join(".gitignore");
     let gi_body = fs::read_to_string(&gi).unwrap_or_default();
@@ -456,25 +517,20 @@ pub fn run(opts: NewOpts) -> Result<()> {
         println!("{}", t!("new.start_hint", name = opts.name.as_str()));
     }
 
-    // Pairing mode (no owner seeded): offer to auto-approve the first DM's
-    // pairing code — only works once the session/server is actually up.
+    // Pairing was opted into: wait to auto-approve the first DM's code —
+    // only works once the session/server is actually up. Locked allowlist
+    // (no owner, no pairing): tell the user how to open it.
     if pairing_mode {
         if do_start {
-            let wait = opts.pair
-                || (!noninteractive
-                    && Confirm::with_theme(&theme)
-                        .with_prompt(t!("new.autopair_prompt").to_string())
-                        .default(true)
-                        .interact()?);
-            if wait {
-                let bot = crate::resolve::resolve(Some(&opts.name))?;
-                if let Err(e) = crate::cmds::access::pair_wait(&bot, 60) {
-                    eprintln!("{} {e}", style(t!("common.warn")).yellow().bold(),);
-                }
+            let bot = crate::resolve::resolve(Some(&opts.name))?;
+            if let Err(e) = crate::cmds::access::pair_wait(&bot, 60) {
+                eprintln!("{} {e}", style(t!("common.warn")).yellow().bold(),);
             }
         } else {
             println!("{}", t!("new.pair_hint", name = opts.name.as_str()));
         }
+    } else if owner.is_empty() {
+        println!("{}", t!("new.locked_hint", name = opts.name.as_str()));
     } else if opts.pair {
         eprintln!(
             "{} {}",

@@ -56,7 +56,8 @@ enum Commands {
         /// Start the tmux session right after creating
         #[arg(long)]
         start: bool,
-        /// Pairing mode only: wait 60s for your DM and auto-approve the code
+        /// Opt into pairing mode (not the default locked allowlist) and
+        /// wait 60s to auto-approve your first DM's code after --start
         #[arg(long)]
         pair: bool,
     },
@@ -144,6 +145,15 @@ enum Commands {
         /// Recipient user snowflake — must be in the allowlist
         #[arg(long)]
         to: Option<String>,
+    },
+    /// Self-update dcbot from GitHub Releases
+    Update {
+        /// Install a specific tag (e.g. v0.7.0) instead of latest
+        #[arg(long)]
+        version: Option<String>,
+        /// Only check — don't download or install
+        #[arg(long)]
+        check: bool,
     },
     /// CLI configuration
     Config {
@@ -270,6 +280,7 @@ fn main() -> Result<()> {
         },
         Commands::Set { key, value, name } => cmds::access::set(&key, &value, name.as_deref()),
         Commands::Dm { text, name, to } => cmds::dm::send(&text, to.as_deref(), name.as_deref()),
+        Commands::Update { version, check } => cmds::update::run(version, check),
         Commands::Config { action } => match action {
             ConfigAction::Set { key, value } => {
                 if key == "lang" {

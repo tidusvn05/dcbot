@@ -11,8 +11,9 @@ All commands are non-interactive-safe when flags are given (no prompts).
 ```
 dcbot new <name> --yes [--dir <path>|--here]
     Onboard a bot. Token from $DCBOT_BOT_TOKEN or --token <t>;
-    --owner <snowflake> seeds the allowlist (recommended; empty leaves
-    pairing mode), --start launches the tmux session.
+    --owner <snowflake> seeds the allowlist (recommended; empty leaves a
+    locked allowlist — unknown DMs are dropped silently), --pair opts
+    into pairing mode instead, --start launches the tmux session.
 dcbot register <dir>     adopt an existing deployment (has bot.toml or
                          .discord-state); generates run.sh if missing
 dcbot list / status [name] / doctor [name|dir]
@@ -30,6 +31,10 @@ dcbot group add <channelId> [--no-mention] [--allow id1,id2] / group rm <channel
 dcbot set <key> <value>  ackReaction, replyToMode, textChunkLimit,
                          chunkMode, mentionPatterns
 dcbot forget <name> / prune    registry cleanup (never deletes dirs)
+dcbot update [--check] [--version <tag>]  self-update the dcbot binary
+    (downloads + verifies the GitHub release asset, replaces the
+    running binary in place — belongs to the user's terminal, like
+    lifecycle commands)
 ```
 
 Inside a deployment dir, `<name>` may be omitted — resolved via the
@@ -56,9 +61,25 @@ nearest `.discord-state` upward.
   deployment dir (`projects[dir].hasTrustDialogAccepted` in
   `~/.claude.json`) — otherwise the first tmux launch hangs on a prompt
   nobody can answer.
-- `dcbot start` DMs the first `allowFrom` entry in access.json once the
-  session is up ("<name> is online") — skipped in pairing mode (nobody
-  to greet); a failed DM only warns, the session stays up.
+- `dcbot start` verifies the session is *actually live* — waits for the
+  channel server (`server.ts` under claude's process tree; it exits on
+  gateway login failure) or the "gateway connected as" pane line
+  (default 45s, `DCBOT_LIVE_TIMEOUT_SECS` to override) — and only then
+  DMs the "online" greeting to the first `allowFrom` entry (skipped when
+  the allowlist is empty — nobody to greet; a failed DM only warns, the
+  session stays up). A session that dies or never confirms gets no
+  greeting; the failed pane is saved to `logs/failed-start-<ts>.log`,
+  events to `logs/lifecycle.log`.
+- A tmux session whose pane fell back to a shell (run.sh exited,
+  claude gone) is dead, not "already running": `dcbot start` recycles
+  it automatically, `dcbot list` shows `dead`, `dcbot doctor` flags it.
+- `run.sh` hardens PATH (`~/.local/bin`, mise shims) — sessions spawned
+  from minimal-env contexts (systemd, agent tools) still find `claude`.
+- Default dmPolicy is `allowlist` (locked — unknown DMs dropped, no
+  code). Pairing is opt-in (`dcbot new --pair` / `dcbot policy
+  pairing`): the bot's "Pairing required" reply tells senders to run
+  `/discord:access pair`, which edits the *global* dir — only
+  `dcbot approve`/`dcbot pair --wait` work here.
 
 ## Token handling
 

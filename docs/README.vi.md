@@ -95,7 +95,7 @@ dcbot start business-bot               # tmux session dcbot-business-bot
 dcbot attach business-bot              # vào session claude
 ```
 
-DM bot — nếu đã seed snowflake thì dùng được ngay. Nếu để trống (pairing mode), bot trả lời bằng code; duyệt bằng `dcbot approve <code>` (chạy trong deployment dir hoặc kèm tên bot) — hoặc chạy `dcbot pair --wait` trước rồi DM để tự duyệt. Bỏ qua gợi ý `/discord:access pair` trong reply của bot — trong deployment dcbot, skill đó ghi vào global state dir chứ không phải của bot này.
+DM bot — nếu đã seed snowflake thì dùng được ngay. Nếu để trống, mặc định là allowlist khoá: DM lạ bị drop lặng — thêm bạn bằng `dcbot allow <snowflake>`. Chưa có snowflake? Bật pairing (`dcbot new --pair`, hoặc `dcbot policy pairing` sau) — bot trả lời bằng code, duyệt bằng `dcbot approve <code>` (chạy trong deployment dir hoặc kèm tên bot), hoặc chạy `dcbot pair --wait` trước rồi DM để tự duyệt. Bỏ qua gợi ý `/discord:access pair` trong reply của bot — trong deployment dcbot, skill đó ghi vào global state dir chứ không phải của bot này.
 
 ### Migrate từ bot global có sẵn
 
@@ -141,6 +141,7 @@ dcbot start existing-bot
 | `dcbot register <dir> / forget / prune` | Quản lý registry & dọn drift |
 | `dcbot config set lang <en\|vi\|ja>` | Đổi ngôn ngữ UI |
 | `dcbot completions <shell>` | Shell completions |
+| `dcbot update [--check] [--version <tag>]` | Tự cập nhật binary dcbot từ GitHub Releases |
 
 Tham số tên có thể bỏ trống khi đứng trong deployment dir — dcbot tự resolve bằng cách đi lên tới `.discord-state` gần nhất.
 
@@ -164,7 +165,7 @@ Tham số tên có thể bỏ trống khi đứng trong deployment dir — dcbot
 
 ## Access model (cùng semantics với plugin gốc)
 
-- `dmPolicy`: `pairing` (mặc định — người lạ nhận code), `allowlist` (drop lặng), `disabled`.
+- `dmPolicy`: `allowlist` (mặc định — người lạ bị drop lặng), `pairing` (opt-in — sender nhận code), `disabled`.
 - `approve` chuyển `senderId` pending vào `allowFrom` và ghi marker `approved/<senderId>` mà server poll.
 - Guild channel opt-in theo **channel** snowflake; thread kế thừa parent; `requireMention` mặc định true.
 - `dcbot new` seed sẵn `allowlist` với snowflake của bạn — đúng khuyến nghị lockdown của plugin.
@@ -207,6 +208,8 @@ Từ source (Rust stable):
 ```bash
 cargo install --path .
 ```
+
+Đã cài rồi? `dcbot update` tự cập nhật lên bản release mới nhất (`--check` để xem trước).
 
 ## License
 

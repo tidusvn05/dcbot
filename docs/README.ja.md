@@ -97,7 +97,7 @@ dcbot start business-bot               # tmux セッション dcbot-business-bot
 dcbot attach business-bot              # claude セッションにアタッチ
 ```
 
-ボットに DM — snowflake をシード済みならそのまま使えます。空のまま (pairing モード) なら、ボットがコードを返信します。`dcbot approve <code>` で承認 (デプロイ dir 内で実行、またはボット名を指定) — あるいは先に `dcbot pair --wait` を実行してから DM すれば自動承認。ボットの返信にある `/discord:access pair` の案内は無視してください — dcbot デプロイではあの skill はこのボットのではなく global の state dir を書き換えます。
+ボットに DM — snowflake をシード済みならそのまま使えます。空のままなら、デフォルトはロックされた allowlist — 未知の DM はサイレントに drop されます。`dcbot allow <snowflake>` で自分を追加してください。snowflake が分からない場合は pairing を opt-in (`dcbot new --pair`、または後から `dcbot policy pairing`) — ボットがコードを返信し、`dcbot approve <code>` で承認 (デプロイ dir 内、またはボット名指定)、あるいは先に `dcbot pair --wait` を実行してから DM すれば自動承認。ボットの返信にある `/discord:access pair` の案内は無視してください — dcbot デプロイではあの skill はこのボットのではなく global の state dir を書き換えます。
 
 ### 既存のグローバルボットからの移行
 
@@ -143,6 +143,7 @@ dcbot start existing-bot
 | `dcbot register <dir> / forget / prune` | registry 管理・ドリフト整理 |
 | `dcbot config set lang <en\|vi\|ja>` | UI 言語を保存 |
 | `dcbot completions <shell>` | シェル補完 |
+| `dcbot update [--check] [--version <tag>]` | GitHub Releases から dcbot バイナリを自己更新 |
 
 デプロイ dir 内では名前引数を省略可能 — 最も近い `.discord-state` を遡って解決します。
 
@@ -166,7 +167,7 @@ dcbot start existing-bot
 
 ## アクセスモデル (上流プラグインと同じ semantics)
 
-- `dmPolicy`: `pairing` (デフォルト — 未知の送信者にコードを返す), `allowlist` (サイレント drop), `disabled`.
+- `dmPolicy`: `allowlist` (デフォルト — 未知の送信者をサイレント drop), `pairing` (opt-in — 送信者にコードを返す), `disabled`.
 - `approve` は pending の `senderId` を `allowFrom` に移し、サーバーがポーリングする `approved/<senderId>` マーカーを書き込みます。
 - guild チャンネルは **チャンネル** snowflake 単位で opt-in、スレッドは親を継承、`requireMention` はデフォルト true。
 - `dcbot new` は snowflake 指定時に `allowlist` をシード — プラグインが推奨するロックダウン状態です。
@@ -210,6 +211,8 @@ curl -fsSL https://raw.githubusercontent.com/tidusvn05/dcbot/main/install.sh | D
 ```bash
 cargo install --path .
 ```
+
+インストール済みなら `dcbot update` で最新リリースに自己更新できます（`--check` で確認のみ）。
 
 ## License
 
