@@ -1,6 +1,6 @@
 [package]
 name = "dcbot"
-version = "0.9.0"
+version = "0.10.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Onboard and manage Discord-channel bots for Claude Code — per-directory state, tmux lifecycle, access control."
@@ -16,7 +16,7 @@ clap_complete = "4"
 comfy-table = "8"
 console = "0.16"
 dialoguer = "0.12"
-dirs = "5"
+dirs = "7"
 regex = "1"
 rust-i18n = "4"
 serde = { version = "1", features = ["derive"] }

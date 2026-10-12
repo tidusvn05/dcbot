@@ -33,7 +33,14 @@ pub fn list() -> Result<()> {
             warnings.push(t!("list.warn_missing_dir", name = name.as_str()).to_string());
             Cell::new(t!("list.st_missing")).fg(Color::Red)
         } else if live.contains(&session) {
-            Cell::new(t!("list.st_running")).fg(Color::Green)
+            // A session whose pane fell back to a shell isn't running —
+            // claude already exited, nothing listens on Discord.
+            if tmux::pane_state(&session) == tmux::PaneState::DeadShell {
+                warnings.push(t!("list.warn_dead", name = name.as_str()).to_string());
+                Cell::new(t!("list.st_dead")).fg(Color::Yellow)
+            } else {
+                Cell::new(t!("list.st_running")).fg(Color::Green)
+            }
         } else {
             Cell::new(t!("list.st_stopped")).fg(Color::DarkGrey)
         };
@@ -116,14 +123,17 @@ pub fn status(name: Option<&str>) -> Result<()> {
     // Runtime
     let session = tmux::session_name(&bot.name);
     if tmux::exists(&session) {
-        println!("  {} {}", t!("status.session"), session);
-        if let Ok(pane) = tmux::capture(&session, 200) {
-            if let Some(line) = pane
-                .lines()
-                .rev()
-                .find(|l| l.contains("gateway connected as"))
-            {
-                println!("  {} {}", t!("status.gateway"), line.trim());
+        if tmux::pane_state(&session) == tmux::PaneState::DeadShell {
+            println!(
+                "  {} {} — {}",
+                t!("status.session"),
+                session,
+                style(t!("status.session_dead")).yellow()
+            );
+        } else {
+            println!("  {} {}", t!("status.session"), session);
+            if let Some(line) = tmux::channel_status(&session) {
+                println!("  {} {}", t!("status.gateway"), line);
             }
         }
     } else {
