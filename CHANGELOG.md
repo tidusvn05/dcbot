@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.11.0] - 2026-10-12
+### Bug Fixes
+
+- Use load_style for comfy-table 8
+
+### Features
+
+- Lock default DM access and add self-update
+
+### Miscellaneous
+
+- Bump comfy-table from 7.2.2 to 8.0.1
+- Bump dirs from 5.0.1 to 7.0.0
+- Bump rust-i18n from 4.2.2 to 4.2.4
+- Bump libc from 0.2.189 to 0.2.190
+
+### Styling
+
+- Cargo fmt
+
+### Ci
+
+- Match lint check name to branch rule
+
+### Merge
+
+- Restore v0.10.0 release commits onto main
+## [0.10.0] - 2026-09-26
+### Bug Fixes
+
+- Detect Message Content Intent LIMITED flag
+
+### Features
+
+- Verify the bot is live before greeting, recycle dead sessions
 ## [0.9.0] - 2026-09-24
 ### Documentation
 
